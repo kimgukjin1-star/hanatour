@@ -142,7 +142,7 @@
                         <p class="text-sm font-bold text-yellow-800 mb-2">
                             <i class="fas fa-palette mr-1"></i>타이틀 디자인
                         </p>
-                        <div class="grid md:grid-cols-3 gap-3">
+                        <div class="grid md:grid-cols-4 gap-3">
                             <div>
                                 <label class="block text-xs font-semibold text-gray-700 mb-1">글꼴</label>
                                 <select id="titleFont" class="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:border-yellow-500 focus:outline-none">
@@ -167,6 +167,12 @@
                                         <option value="'SB-Aggro-M', sans-serif">SB 어그로 M</option>
                                     </optgroup>
                                 </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">글자 크기 (px)</label>
+                                <input type="number" id="titleFontSize" value="36" min="12" max="100"
+                                    class="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:border-yellow-500 focus:outline-none"
+                                    placeholder="36">
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-gray-700 mb-1">글자 색상</label>
@@ -240,15 +246,10 @@
                             </select>
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-gray-600 mb-1">폰트 크기</label>
-                            <select id="periodFontSize" class="w-full px-3 py-2 border border-gray-300 rounded text-sm">
-                                <option value="14px">매우 작게</option>
-                                <option value="16px">작게</option>
-                                <option value="18px">보통</option>
-                                <option value="20px" selected>크게 (기본)</option>
-                                <option value="24px">매우 크게</option>
-                                <option value="28px">특대</option>
-                            </select>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">폰트 크기 (px)</label>
+                            <input type="number" id="periodFontSize" value="20" min="12" max="100"
+                                class="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                                placeholder="20">
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-gray-600 mb-1">색상</label>
@@ -342,6 +343,62 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- 상품가격 디자인 설정 -->
+                <div class="bg-yellow-50 p-4 rounded-lg border-2 border-yellow-300 mt-4">
+                    <h4 class="text-sm font-bold text-gray-700 mb-3 flex items-center">
+                        <i class="fas fa-paint-brush text-yellow-600 mr-2"></i>상품가격 디자인
+                    </h4>
+                    <div class="grid md:grid-cols-4 gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">폰트</label>
+                            <select id="priceFont" class="w-full px-3 py-2 border border-gray-300 rounded text-sm">
+                                <optgroup label="기본 폰트">
+                                    <option value="'Noto Sans KR', sans-serif">Noto Sans (기본)</option>
+                                    <option value="'Nanum Gothic', sans-serif">나눔고딕</option>
+                                    <option value="'Nanum Myeongjo', serif">나눔명조</option>
+                                    <option value="'Black Han Sans', sans-serif">검은고딕</option>
+                                    <option value="'Do Hyeon', sans-serif">도현체</option>
+                                    <option value="'Jua', sans-serif">주아체</option>
+                                    <option value="'Gamja Flower', cursive">감자꽃체</option>
+                                    <option value="'Sunflower', sans-serif">해바라기체</option>
+                                </optgroup>
+                                <optgroup label="커스텀 폰트">
+                                    <option value="'Pretendard-ExtraBold', sans-serif">Pretendard ExtraBold</option>
+                                    <option value="'Pretendard-Light', sans-serif">Pretendard Light</option>
+                                    <option value="'Pretendard-Medium', sans-serif">Pretendard Medium</option>
+                                    <option value="'Pretendard-Regular', sans-serif">Pretendard Regular</option>
+                                    <option value="'Recipekorea', sans-serif">레시피코리아 레코체</option>
+                                    <option value="'SB-Aggro-B', sans-serif">SB 어그로 B</option>
+                                    <option value="'SB-Aggro-L', sans-serif">SB 어그로 L</option>
+                                    <option value="'SB-Aggro-M', sans-serif">SB 어그로 M</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">폰트 크기 (px)</label>
+                            <input type="number" id="priceFontSize" value="16" min="12" max="100"
+                                class="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                                placeholder="16">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">색상</label>
+                            <div class="flex gap-2">
+                                <input type="color" id="priceColor" value="#1f2937" class="w-12 h-9 rounded cursor-pointer">
+                                <input type="text" id="priceColorHex" value="#1f2937" maxlength="7"
+                                    class="flex-1 px-2 py-1 border border-gray-300 rounded text-sm" placeholder="#1f2937">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">정렬방식</label>
+                            <select id="priceAlign" class="w-full px-3 py-2 border border-gray-300 rounded text-sm">
+                                <option value="left">왼쪽 정렬</option>
+                                <option value="center" selected>가운데 정렬</option>
+                                <option value="right">오른쪽 정렬</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
             </div>
 
                 <!-- 포함/불포함/선택경비 정보 -->
@@ -388,6 +445,63 @@
                             <textarea id="optionals" rows="4" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none text-sm leading-relaxed" placeholder="예: 선택 관광, 업그레이드 객실, 좌석 지정 요금 등"></textarea>
                         </div>
                     </div>
+
+                    <!-- 포함/불포함 디자인 설정 -->
+                    <div class="bg-yellow-50 p-4 rounded-lg border-2 border-yellow-300 mt-4">
+                        <h4 class="text-sm font-bold text-gray-700 mb-3 flex items-center">
+                            <i class="fas fa-paint-brush text-yellow-600 mr-2"></i>포함/불포함 디자인
+                        </h4>
+                        <div class="grid md:grid-cols-4 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">폰트</label>
+                                <select id="expenseFont" class="w-full px-3 py-2 border border-gray-300 rounded text-sm">
+                                    <optgroup label="기본 폰트">
+                                        <option value="'Noto Sans KR', sans-serif">Noto Sans (기본)</option>
+                                        <option value="'Nanum Gothic', sans-serif">나눔고딕</option>
+                                        <option value="'Nanum Myeongjo', serif">나눔명조</option>
+                                        <option value="'Black Han Sans', sans-serif">검은고딕</option>
+                                        <option value="'Do Hyeon', sans-serif">도현체</option>
+                                        <option value="'Jua', sans-serif">주아체</option>
+                                        <option value="'Gamja Flower', cursive">감자꽃체</option>
+                                        <option value="'Sunflower', sans-serif">해바라기체</option>
+                                    </optgroup>
+                                    <optgroup label="커스텀 폰트">
+                                        <option value="'Pretendard-ExtraBold', sans-serif">Pretendard ExtraBold</option>
+                                        <option value="'Pretendard-Light', sans-serif">Pretendard Light</option>
+                                        <option value="'Pretendard-Medium', sans-serif">Pretendard Medium</option>
+                                        <option value="'Pretendard-Regular', sans-serif">Pretendard Regular</option>
+                                        <option value="'Recipekorea', sans-serif">레시피코리아 레코체</option>
+                                        <option value="'SB-Aggro-B', sans-serif">SB 어그로 B</option>
+                                        <option value="'SB-Aggro-L', sans-serif">SB 어그로 L</option>
+                                        <option value="'SB-Aggro-M', sans-serif">SB 어그로 M</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">폰트 크기 (px)</label>
+                                <input type="number" id="expenseFontSize" value="14" min="12" max="100"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+                                    placeholder="14">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">색상</label>
+                                <div class="flex gap-2">
+                                    <input type="color" id="expenseColor" value="#374151" class="w-12 h-9 rounded cursor-pointer">
+                                    <input type="text" id="expenseColorHex" value="#374151" maxlength="7"
+                                        class="flex-1 px-2 py-1 border border-gray-300 rounded text-sm" placeholder="#374151">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-600 mb-1">정렬방식</label>
+                                <select id="expenseAlign" class="w-full px-3 py-2 border border-gray-300 rounded text-sm">
+                                    <option value="left" selected>왼쪽 정렬</option>
+                                    <option value="center">가운데 정렬</option>
+                                    <option value="right">오른쪽 정렬</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="mt-8 border border-gray-200 rounded-xl bg-white p-5">
                         <div class="grid md:grid-cols-2 gap-6">
                             <div>
@@ -548,7 +662,7 @@
                         <p class="text-sm font-bold text-yellow-800 mb-2">
                             <i class="fas fa-palette mr-1"></i>미팅 정보 디자인
                         </p>
-                        <div class="grid md:grid-cols-3 gap-3">
+                        <div class="grid md:grid-cols-4 gap-3">
                             <div>
                                 <label class="block text-xs font-semibold text-gray-700 mb-1">글꼴</label>
                                 <select id="meetingFont" class="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:border-yellow-500 focus:outline-none">
@@ -573,6 +687,12 @@
                                         <option value="'SB-Aggro-M', sans-serif">SB 어그로 M</option>
                                     </optgroup>
                                 </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">글자 크기 (px)</label>
+                                <input type="number" id="meetingFontSize" value="14" min="12" max="100"
+                                    class="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:border-yellow-500 focus:outline-none"
+                                    placeholder="14">
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-gray-700 mb-1">글자 색상</label>
@@ -713,7 +833,7 @@
                         <p class="text-sm font-bold text-yellow-800 mb-2">
                             <i class="fas fa-palette mr-1"></i>항공편 정보 디자인
                         </p>
-                        <div class="grid md:grid-cols-3 gap-3">
+                        <div class="grid md:grid-cols-4 gap-3">
                             <div>
                                 <label class="block text-xs font-semibold text-gray-700 mb-1">글꼴</label>
                                 <select id="flightFont" class="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:border-yellow-500 focus:outline-none">
@@ -738,6 +858,12 @@
                                         <option value="'SB-Aggro-M', sans-serif">SB 어그로 M</option>
                                     </optgroup>
                                 </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">글자 크기 (px)</label>
+                                <input type="number" id="flightFontSize" value="14" min="12" max="100"
+                                    class="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:border-yellow-500 focus:outline-none"
+                                    placeholder="14">
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-gray-700 mb-1">글자 색상</label>
@@ -768,22 +894,22 @@
                     </h3>
                     <div id="scheduleContainer" class="space-y-4">
                         <div class="schedule-item bg-white p-4 rounded-lg border-2 border-gray-200">
-                            <div class="grid md:grid-cols-3 gap-4">
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Day</label>
-                                    <input type="text" class="schedule-day w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none"
-                                        placeholder="예: Day 1">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">날짜</label>
-                                    <input type="date" class="schedule-date w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">일정 제목</label>
-                                    <input type="text" class="schedule-title w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none"
-                                        placeholder="예: 파리 시내 관광">
-                                </div>
-                            </div>
+							<div class="space-y-3">
+								<div>
+									<label class="block text-sm font-semibold text-gray-700 mb-2">Day</label>
+									<input type="text" class="schedule-day w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none"
+										placeholder="예: Day 1">
+								</div>
+								<div>
+									<label class="block text-sm font-semibold text-gray-700 mb-2">날짜</label>
+									<input type="date" class="schedule-date w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none">
+								</div>
+								<div>
+									<label class="block text-sm font-semibold text-gray-700 mb-2">일정 제목</label>
+									<textarea class="schedule-title w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none" rows="2"
+										placeholder="예: 파리 시내 관광 (엔터로 줄바꿈 가능)"></textarea>
+								</div>
+							</div>
                             <!-- 일정 상세 내용 -->
                             <div class="mt-3 md:col-span-3">
                                 <label class="block text-sm font-semibold text-gray-700 mb-2">세부 일정</label>
@@ -794,13 +920,13 @@
                             <div class="grid md:grid-cols-2 gap-4 mt-3">
                                 <div>
                                     <label class="block text-sm font-semibold text-gray-700 mb-2">숙소</label>
-                                    <input type="text" class="schedule-hotel w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none"
-                                        placeholder="예: 파리 힐튼 호텔">
+									<textarea class="schedule-hotel w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none" rows="2"
+										placeholder="예: 파리 힐튼 호텔 (엔터로 줄바꿈 가능)"></textarea>
                                 </div>
                                 <div>
                                     <label class="block text-sm font-semibold text-gray-700 mb-2">식사</label>
-                                    <input type="text" class="schedule-meal w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none"
-                                        placeholder="예: 조식 포함, 중식 현지식">
+									<textarea class="schedule-meal w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none" rows="2"
+										placeholder="예: 조식 포함, 중식 현지식 (엔터로 줄바꿈 가능)"></textarea>
                                 </div>
                             </div>
                             <!-- 일정 이미지 -->
@@ -827,7 +953,7 @@
                         <p class="text-sm font-bold text-yellow-800 mb-2">
                             <i class="fas fa-palette mr-1"></i>일정표 디자인
                         </p>
-                        <div class="grid md:grid-cols-3 gap-3">
+                        <div class="grid md:grid-cols-4 gap-3">
                             <div>
                                 <label class="block text-xs font-semibold text-gray-700 mb-1">글꼴</label>
                                 <select id="teeupFont" class="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:border-yellow-500 focus:outline-none">
@@ -852,6 +978,12 @@
                                         <option value="'SB-Aggro-M', sans-serif">SB 어그로 M</option>
                                     </optgroup>
                                 </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">글자 크기 (px)</label>
+                                <input type="number" id="teeupFontSize" value="14" min="12" max="100"
+                                    class="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:border-yellow-500 focus:outline-none"
+                                    placeholder="14">
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-gray-700 mb-1">글자 색상</label>
@@ -963,9 +1095,14 @@
 
                 <!-- 현지 정보 -->
                 <div class="bg-pink-50 p-6 rounded-lg border-2 border-pink-200">
-                    <h3 class="text-lg font-bold text-gray-800 mb-4">
-                        <i class="fas fa-globe text-pink-600 mr-2"></i>현지 정보 (선택)
-                    </h3>
+                    <div class="flex items-center gap-3 mb-4">
+                        <i class="fas fa-globe text-pink-600"></i>
+                        <select id="additionalTitle" class="px-4 py-2 text-lg font-bold border-2 border-pink-300 rounded-lg focus:border-pink-500 focus:outline-none bg-white">
+                            <option value="현지 정보">현지 정보</option>
+                            <option value="비고사항">비고사항</option>
+                        </select>
+                        <span class="text-sm text-gray-500">(선택)</span>
+                    </div>
                     <textarea id="additionalInfo" rows="4"
                         class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-pink-500 focus:outline-none"
                         placeholder="준비물, 주의사항 등 추가로 전달할 내용을 입력하세요"></textarea>
@@ -975,7 +1112,7 @@
                         <p class="text-sm font-bold text-yellow-800 mb-2">
                             <i class="fas fa-palette mr-1"></i>현지 정보 디자인
                         </p>
-                        <div class="grid md:grid-cols-3 gap-3">
+                        <div class="grid md:grid-cols-4 gap-3">
                             <div>
                                 <label class="block text-xs font-semibold text-gray-700 mb-1">글꼴</label>
                                 <select id="additionalFont" class="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:border-yellow-500 focus:outline-none">
@@ -1000,6 +1137,12 @@
                                         <option value="'SB-Aggro-M', sans-serif">SB 어그로 M</option>
                                     </optgroup>
                                 </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">글자 크기 (px)</label>
+                                <input type="number" id="additionalFontSize" value="14" min="12" max="100"
+                                    class="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:border-yellow-500 focus:outline-none"
+                                    placeholder="14">
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-gray-700 mb-1">글자 색상</label>
@@ -1056,18 +1199,30 @@
                         <!-- 회사 전화번호 -->
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">대표 전화번호</label>
-                            <input type="tel" id="companyPhone"
-                                class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-gray-500 focus:outline-none"
-                                placeholder="예: 02-1234-5678">
+							<div class="flex items-center gap-3">
+								<input type="tel" id="companyPhone"
+									class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-gray-500 focus:outline-none"
+									placeholder="예: 02-1234-5678">
+								<label class="inline-flex items-center gap-2 text-sm font-semibold text-gray-700 cursor-pointer">
+									<input type="checkbox" id="companyPhoneIncludeToggle" class="h-5 w-5 text-gray-600 border-2 border-gray-300 rounded" checked>
+									<span class="flex items-center gap-1"><i class="fas fa-eye text-yellow-500"></i>미리보기 포함</span>
+								</label>
+							</div>
                         </div>
                     </div>
 
                     <!-- 회사 주소 -->
                     <div class="mt-4">
                         <label class="block text-sm font-semibold text-gray-700 mb-2">회사 주소</label>
-                        <input type="text" id="companyAddress"
-                            class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-gray-500 focus:outline-none"
-                            placeholder="예: 서울시 강남구 테헤란로 123">
+						<div class="flex items-center gap-3">
+							<input type="text" id="companyAddress"
+								class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-gray-500 focus:outline-none"
+								placeholder="예: 서울시 강남구 테헤란로 123">
+							<label class="inline-flex items-center gap-2 text-sm font-semibold text-gray-700 cursor-pointer">
+								<input type="checkbox" id="companyAddressIncludeToggle" class="h-5 w-5 text-gray-600 border-2 border-gray-300 rounded" checked>
+								<span class="flex items-center gap-1"><i class="fas fa-eye text-yellow-500"></i>미리보기 포함</span>
+							</label>
+						</div>
                     </div>
 
                     <!-- 담당자 정보 -->
@@ -1107,7 +1262,7 @@
                         <p class="text-sm font-bold text-yellow-800 mb-2">
                             <i class="fas fa-palette mr-1"></i>회사 정보 디자인
                         </p>
-                        <div class="grid md:grid-cols-3 gap-3">
+                        <div class="grid md:grid-cols-4 gap-3">
                             <div>
                                 <label class="block text-xs font-semibold text-gray-700 mb-1">글꼴</label>
                                 <select id="companyFont" class="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:border-yellow-500 focus:outline-none">
@@ -1134,6 +1289,12 @@
                                 </select>
                             </div>
                             <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">글자 크기 (px)</label>
+                                <input type="number" id="companyFontSize" value="14" min="12" max="100"
+                                    class="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:border-yellow-500 focus:outline-none"
+                                    placeholder="14">
+                            </div>
+                            <div>
                                 <label class="block text-xs font-semibold text-gray-700 mb-1">글자 색상</label>
                                 <div class="flex gap-2">
                                     <input type="color" id="companyColor" value="#1f2937"
@@ -1157,7 +1318,7 @@
 
                 <!-- 버튼 -->
                 <div class="flex gap-4">
-                    <button type="submit" class="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 text-white py-4 rounded-lg font-bold text-lg hover:shadow-lg transition">
+					<button type="submit" formnovalidate class="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 text-white py-4 rounded-lg font-bold text-lg hover:shadow-lg transition">
                         <i class="fas fa-eye mr-2"></i>미리보기 & 공유하기
                     </button>
                 </div>
@@ -1243,6 +1404,7 @@
                         title: $('#title')?.value || '',
                         titleStyle: {
                             font: $('#titleFont')?.value || '',
+                            size: $('#titleFontSize')?.value || '36',
                             color: $('#titleColorHex')?.value || '#ffffff',
                             align: $('#titleAlign')?.value || 'center'
                         }
@@ -1250,7 +1412,7 @@
                     period: { start, end,
                         style: {
                             font: $('#periodFont')?.value || '',
-                            size: $('#periodFontSize')?.value || '20px',
+                            size: $('#periodFontSize')?.value || '20',
                             color: $('#periodColorHex')?.value || '#ffffff',
                             align: $('#periodAlign')?.value || 'center'
                         }
@@ -1259,7 +1421,13 @@
                         included: $('#priceIncludeToggle')?.checked ?? true,
                         adult: stripNum($('#adultPrice')?.value),
                         child: stripNum($('#childPrice')?.value),
-                        infant: stripNum($('#infantPrice')?.value)
+                        infant: stripNum($('#infantPrice')?.value),
+                        style: {
+                            font: $('#priceFont')?.value || '',
+                            size: $('#priceFontSize')?.value || '16',
+                            color: $('#priceColorHex')?.value || '#1f2937',
+                            align: $('#priceAlign')?.value || 'center'
+                        }
                     },
                     expense: {
                         inc: {
@@ -1271,7 +1439,13 @@
                             guide: $('#incGuide')?.value || ''
                         },
                         exc: ($('#exclusions')?.value || '').split(/\r?\n/).map(s => s.trim()).filter(Boolean),
-                        opt: ($('#optionals')?.value || '').split(/\r?\n/).map(s => s.trim()).filter(Boolean)
+                        opt: ($('#optionals')?.value || '').split(/\r?\n/).map(s => s.trim()).filter(Boolean),
+                        style: {
+                            font: $('#expenseFont')?.value || '',
+                            size: $('#expenseFontSize')?.value || '14',
+                            color: $('#expenseColorHex')?.value || '#374151',
+                            align: $('#expenseAlign')?.value || 'left'
+                        }
                     },
                     meeting: {
                         sectionIncluded: $('#meetingSectionIncludeToggle')?.checked ?? true,
@@ -1290,6 +1464,12 @@
                             time: $('#meetingTimeLocal')?.value || '',
                             contact: $('#meetingGuideLocal')?.value || '',
                             phone: $('#meetingPhoneLocal')?.value || ''
+                        },
+                        style: {
+                            font: $('#meetingFont')?.value || '',
+                            size: $('#meetingFontSize')?.value || '14',
+                            color: $('#meetingColorHex')?.value || '#1f2937',
+                            align: $('#meetingAlign')?.value || 'left'
                         }
                     },
                     flight: {
@@ -1309,6 +1489,12 @@
                             arrTime: $('#returnArrivalTime')?.value || '',
                             flightNo: $('#returnFlight')?.value || '',
                             duration: $('#returnFlightDuration')?.value || ''
+                        },
+                        style: {
+                            font: $('#flightFont')?.value || '',
+                            size: $('#flightFontSize')?.value || '14',
+                            color: $('#flightColorHex')?.value || '#1f2937',
+                            align: $('#flightAlign')?.value || 'left'
                         }
                     },
                     schedules: $$('#scheduleContainer .schedule-item').map(item => ({
@@ -1319,15 +1505,38 @@
                         hotel: $('.schedule-hotel', item)?.value || '',
                         meal: $('.schedule-meal', item)?.value || ''
                     })),
-                    additional: { text: $('#additionalInfo')?.value || '' },
+                    scheduleStyle: {
+                        font: $('#teeupFont')?.value || '',
+                        size: $('#teeupFontSize')?.value || '14',
+                        color: $('#teeupColorHex')?.value || '#1f2937',
+                        align: $('#teeupAlign')?.value || 'left'
+                    },
+                    additional: {
+                        title: $('#additionalTitle')?.value || '현지 정보',
+                        text: $('#additionalInfo')?.value || '',
+                        style: {
+                            font: $('#additionalFont')?.value || '',
+                            size: $('#additionalFontSize')?.value || '14',
+                            color: $('#additionalColorHex')?.value || '#1f2937',
+                            align: $('#additionalAlign')?.value || 'left'
+                        }
+                    },
                     company: {
                         name: $('#companyName')?.value || '',
                         phone: $('#companyPhone')?.value || '',
                         address: $('#companyAddress')?.value || '',
+						showPhone: $('#companyPhoneIncludeToggle')?.checked ?? true,
+						showAddress: $('#companyAddressIncludeToggle')?.checked ?? true,
                         manager: {
                             name: $('#managerName')?.value || '',
                             phone: $('#managerPhone')?.value || '',
                             email: $('#managerEmail')?.value || ''
+                        },
+                        style: {
+                            font: $('#companyFont')?.value || '',
+                            size: $('#companyFontSize')?.value || '14',
+                            color: $('#companyColorHex')?.value || '#1f2937',
+                            align: $('#companyAlign')?.value || 'left'
                         }
                     }
                 };
@@ -1391,6 +1600,103 @@
                 toggle.addEventListener('change', apply);
                 apply();
             })();
+			// 시작일/종료일 기반 간략 일정 자동 생성
+			(function () {
+				const startEl = document.getElementById('startDate');
+				const endEl = document.getElementById('endDate');
+				const container = document.getElementById('scheduleContainer');
+				if (!startEl || !endEl || !container) return;
+
+				const oneDayMs = 24 * 60 * 60 * 1000;
+				const toDateStr = function (d) {
+					const yyyy = d.getFullYear();
+					const mm = String(d.getMonth() + 1).padStart(2, '0');
+					const dd = String(d.getDate()).padStart(2, '0');
+					return `${yyyy}-${mm}-${dd}`;
+				};
+				const hasUserContent = function () {
+					return Array.from(container.querySelectorAll('.schedule-item')).some(function (item) {
+						return Array.from(item.querySelectorAll('input[type="text"], textarea')).some(function (el) {
+							return !!(el.value || '').trim();
+						});
+					});
+				};
+				const generate = function () {
+					const s = startEl.value;
+					const e = endEl.value;
+					if (!s || !e) return;
+					const start = new Date(s);
+					const end = new Date(e);
+					if (isNaN(start.getTime()) || isNaN(end.getTime()) || end < start) return;
+
+					// 사용자 입력 보호
+					if (hasUserContent()) {
+						const ok = confirm('기존 간략 일정이 초기화됩니다. 계속하시겠습니까?');
+						if (!ok) return;
+					}
+
+					const template = container.querySelector('.schedule-item');
+					if (!template) return;
+
+					// 비우고 생성
+					container.innerHTML = '';
+					const totalDays = Math.floor((end.getTime() - start.getTime()) / oneDayMs) + 1;
+					const maxDays = Math.min(totalDays, 60);
+					for (let i = 0; i < maxDays; i++) {
+						const item = template.cloneNode(true);
+
+						// 입력 초기화
+						item.querySelectorAll('input, textarea').forEach(function (el) {
+							if (el.type === 'file') {
+								el.value = '';
+							} else {
+								el.value = '';
+							}
+						});
+
+						// Day/날짜 세팅
+						const dayEl = item.querySelector('.schedule-day');
+						const dateEl = item.querySelector('.schedule-date');
+						if (dayEl) dayEl.value = `Day ${i + 1}`;
+						if (dateEl) {
+							const d = new Date(start.getTime() + i * oneDayMs);
+							dateEl.value = toDateStr(d);
+						}
+
+						// 이미지 프리뷰 초기화/바인딩 (간단 복제)
+						const previewWrap = item.querySelector('.schedule-image-preview');
+						const previewImg = previewWrap ? previewWrap.querySelector('img') : null;
+						const imageInput = item.querySelector('.schedule-image');
+						const removeBtn = item.querySelector('.remove-schedule-image');
+						if (previewWrap) previewWrap.classList.add('hidden');
+						if (previewImg) previewImg.src = '';
+						if (imageInput && previewWrap && previewImg) {
+							imageInput.addEventListener('change', function () {
+								if (imageInput.files && imageInput.files[0]) {
+									const url = URL.createObjectURL(imageInput.files[0]);
+									previewImg.src = url;
+									previewWrap.classList.remove('hidden');
+								} else {
+									previewImg.src = '';
+									previewWrap.classList.add('hidden');
+								}
+							});
+						}
+						if (removeBtn && imageInput && previewWrap && previewImg) {
+							removeBtn.addEventListener('click', function () {
+								imageInput.value = '';
+								previewImg.src = '';
+								previewWrap.classList.add('hidden');
+							});
+						}
+
+						container.appendChild(item);
+					}
+				};
+
+				startEl.addEventListener('change', generate);
+				endEl.addEventListener('change', generate);
+			})();
 
             // 미팅 정보 섹션 전체 토글
             (function () {
@@ -1414,6 +1720,21 @@
 
                 const apply = function () {
                     section.classList.toggle('collapsed', !toggle.checked);
+					// 섹션이 제외되면 해당 입력의 required를 해제하여 미리보기 진행을 막지 않음
+					const reqIds = [
+						'departureAirport','arrivalAirport','departureTime','arrivalTime','departureFlight',
+						'returnDepartureAirport','returnArrivalAirport','returnDepartureTime','returnArrivalTime','returnFlight'
+					];
+					reqIds.forEach(function(id){
+						const el = document.getElementById(id);
+						if (!el) return;
+						if (toggle.checked) {
+							// 필수 복원
+							el.required = true;
+						} else {
+							el.required = false;
+						}
+					});
                 };
 
                 toggle.addEventListener('change', apply);
@@ -1613,7 +1934,10 @@
                     e.preventDefault();
                     const data = serializeForm();
                     const payload = encodeData(data);
-                    window.open(`preview.html?d=${payload}`, '_blank');
+					const newWin = window.open(`preview.html?d=${payload}`, '_blank');
+					if (!newWin || newWin.closed) {
+						location.href = `preview.html?d=${payload}`;
+					}
                 });
 
                 const STORAGE_KEY = 'travel_saves_v1';
@@ -1727,24 +2051,28 @@
 
                 const collectDesign = function () {
                     return {
-                        title: { font: $('#titleFont')?.value, color: $('#titleColorHex')?.value, align: $('#titleAlign')?.value },
+                        title: { font: $('#titleFont')?.value, size: $('#titleFontSize')?.value, color: $('#titleColorHex')?.value, align: $('#titleAlign')?.value },
                         period: { font: $('#periodFont')?.value, size: $('#periodFontSize')?.value, color: $('#periodColorHex')?.value, align: $('#periodAlign')?.value },
-                        meeting: { font: $('#meetingFont')?.value, color: $('#meetingColorHex')?.value, align: $('#meetingAlign')?.value },
-                        flight: { font: $('#flightFont')?.value, color: $('#flightColorHex')?.value, align: $('#flightAlign')?.value },
-                        schedule: { font: $('#teeupFont')?.value, color: $('#teeupColorHex')?.value, align: $('#teeupAlign')?.value },
-                        additional: { font: $('#additionalFont')?.value, color: $('#additionalColorHex')?.value, align: $('#additionalAlign')?.value },
-                        company: { font: $('#companyFont')?.value, color: $('#companyColorHex')?.value, align: $('#companyAlign')?.value }
+                        price: { font: $('#priceFont')?.value, size: $('#priceFontSize')?.value, color: $('#priceColorHex')?.value, align: $('#priceAlign')?.value },
+                        expense: { font: $('#expenseFont')?.value, size: $('#expenseFontSize')?.value, color: $('#expenseColorHex')?.value, align: $('#expenseAlign')?.value },
+                        meeting: { font: $('#meetingFont')?.value, size: $('#meetingFontSize')?.value, color: $('#meetingColorHex')?.value, align: $('#meetingAlign')?.value },
+                        flight: { font: $('#flightFont')?.value, size: $('#flightFontSize')?.value, color: $('#flightColorHex')?.value, align: $('#flightAlign')?.value },
+                        schedule: { font: $('#teeupFont')?.value, size: $('#teeupFontSize')?.value, color: $('#teeupColorHex')?.value, align: $('#teeupAlign')?.value },
+                        additional: { font: $('#additionalFont')?.value, size: $('#additionalFontSize')?.value, color: $('#additionalColorHex')?.value, align: $('#additionalAlign')?.value },
+                        company: { font: $('#companyFont')?.value, size: $('#companyFontSize')?.value, color: $('#companyColorHex')?.value, align: $('#companyAlign')?.value }
                     };
                 };
                 const applyDesign = function (d) {
                     const set = (id, val) => { const el = document.getElementById(id); if (el && val != null) el.value = val; };
-                    set('titleFont', d.title?.font); set('titleColorHex', d.title?.color); set('titleAlign', d.title?.align); $('#titleColor') && ($('#titleColor').value = d.title?.color || '#ffffff');
+                    set('titleFont', d.title?.font); set('titleFontSize', d.title?.size); set('titleColorHex', d.title?.color); set('titleAlign', d.title?.align); $('#titleColor') && ($('#titleColor').value = d.title?.color || '#ffffff');
                     set('periodFont', d.period?.font); set('periodFontSize', d.period?.size); set('periodColorHex', d.period?.color); set('periodAlign', d.period?.align); $('#periodColor') && ($('#periodColor').value = d.period?.color || '#ffffff');
-                    set('meetingFont', d.meeting?.font); set('meetingColorHex', d.meeting?.color); set('meetingAlign', d.meeting?.align); $('#meetingColor') && ($('#meetingColor').value = d.meeting?.color || '#1f2937');
-                    set('flightFont', d.flight?.font); set('flightColorHex', d.flight?.color); set('flightAlign', d.flight?.align); $('#flightColor') && ($('#flightColor').value = d.flight?.color || '#1f2937');
-                    set('teeupFont', d.schedule?.font); set('teeupColorHex', d.schedule?.color); set('teeupAlign', d.schedule?.align); $('#teeupColor') && ($('#teeupColor').value = d.schedule?.color || '#1f2937');
-                    set('additionalFont', d.additional?.font); set('additionalColorHex', d.additional?.color); set('additionalAlign', d.additional?.align); $('#additionalColor') && ($('#additionalColor').value = d.additional?.color || '#1f2937');
-                    set('companyFont', d.company?.font); set('companyColorHex', d.company?.color); set('companyAlign', d.company?.align); $('#companyColor') && ($('#companyColor').value = d.company?.color || '#1f2937');
+                    set('priceFont', d.price?.font); set('priceFontSize', d.price?.size); set('priceColorHex', d.price?.color); set('priceAlign', d.price?.align); $('#priceColor') && ($('#priceColor').value = d.price?.color || '#1f2937');
+                    set('expenseFont', d.expense?.font); set('expenseFontSize', d.expense?.size); set('expenseColorHex', d.expense?.color); set('expenseAlign', d.expense?.align); $('#expenseColor') && ($('#expenseColor').value = d.expense?.color || '#374151');
+                    set('meetingFont', d.meeting?.font); set('meetingFontSize', d.meeting?.size); set('meetingColorHex', d.meeting?.color); set('meetingAlign', d.meeting?.align); $('#meetingColor') && ($('#meetingColor').value = d.meeting?.color || '#1f2937');
+                    set('flightFont', d.flight?.font); set('flightFontSize', d.flight?.size); set('flightColorHex', d.flight?.color); set('flightAlign', d.flight?.align); $('#flightColor') && ($('#flightColor').value = d.flight?.color || '#1f2937');
+                    set('teeupFont', d.schedule?.font); set('teeupFontSize', d.schedule?.size); set('teeupColorHex', d.schedule?.color); set('teeupAlign', d.schedule?.align); $('#teeupColor') && ($('#teeupColor').value = d.schedule?.color || '#1f2937');
+                    set('additionalFont', d.additional?.font); set('additionalFontSize', d.additional?.size); set('additionalColorHex', d.additional?.color); set('additionalAlign', d.additional?.align); $('#additionalColor') && ($('#additionalColor').value = d.additional?.color || '#1f2937');
+                    set('companyFont', d.company?.font); set('companyFontSize', d.company?.size); set('companyColorHex', d.company?.color); set('companyAlign', d.company?.align); $('#companyColor') && ($('#companyColor').value = d.company?.color || '#1f2937');
                 };
 
                 saveTplBtn && saveTplBtn.addEventListener('click', function () {
@@ -1823,20 +2151,33 @@
 
                 // pending load (from saved list quick-load)
                 const pending = localStorage.getItem('__pending_load__');
-                if (pending) {
+				if (pending) {
                     try {
                         const data = JSON.parse(pending);
-                        // apply minimal: reload handler earlier didn't keep function; but here page loaded.
-                        // For brevity, just set fields commonly used in preview.
-                        // In a full app, we would reuse applyDataToForm.
-                        // Simplified set:
-                        const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val ?? ''; };
+						const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val ?? ''; };
+						const setChecked = (id, val) => { const el = document.getElementById(id); if (el) el.checked = !!val; };
                         set('title', data.meta?.title);
+                        set('titleFont', data.meta?.titleStyle?.font);
+                        set('titleFontSize', data.meta?.titleStyle?.size || '36');
+                        set('titleColorHex', data.meta?.titleStyle?.color || '#ffffff');
+                        set('titleAlign', data.meta?.titleStyle?.align || 'center');
+                        if ($('#titleColor')) $('#titleColor').value = data.meta?.titleStyle?.color || '#ffffff';
                         set('startDate', data.period?.start);
                         set('endDate', data.period?.end);
+                        set('periodFont', data.period?.style?.font);
+                        set('periodFontSize', data.period?.style?.size || '20');
+                        set('periodColorHex', data.period?.style?.color || '#ffffff');
+                        set('periodAlign', data.period?.style?.align || 'center');
+                        if ($('#periodColor')) $('#periodColor').value = data.period?.style?.color || '#ffffff';
                         set('adultPrice', data.prices?.adult);
                         set('childPrice', data.prices?.child);
                         set('infantPrice', data.prices?.infant);
+						setChecked('priceIncludeToggle', data.prices?.included !== false);
+                        set('priceFont', data.prices?.style?.font);
+                        set('priceFontSize', data.prices?.style?.size || '16');
+                        set('priceColorHex', data.prices?.style?.color || '#1f2937');
+                        set('priceAlign', data.prices?.style?.align || 'center');
+                        if ($('#priceColor')) $('#priceColor').value = data.prices?.style?.color || '#1f2937';
                         set('incTransport', data.expense?.inc?.transport);
                         set('incHotel', data.expense?.inc?.hotel);
                         set('incMeal', data.expense?.inc?.meal);
@@ -1845,6 +2186,98 @@
                         set('incGuide', data.expense?.inc?.guide);
                         document.getElementById('exclusions').value = (data.expense?.exc||[]).join('\\n');
                         document.getElementById('optionals').value = (data.expense?.opt||[]).join('\\n');
+                        set('expenseFont', data.expense?.style?.font);
+                        set('expenseFontSize', data.expense?.style?.size || '14');
+                        set('expenseColorHex', data.expense?.style?.color || '#374151');
+                        set('expenseAlign', data.expense?.style?.align || 'left');
+                        if ($('#expenseColor')) $('#expenseColor').value = data.expense?.style?.color || '#374151';
+
+						// 회의/항공 섹션 토글
+						setChecked('meetingSectionIncludeToggle', data.meeting?.sectionIncluded !== false);
+						setChecked('airportMeetingInclude', data.meeting?.airport?.include !== false);
+						set('meetingPlaceAirport', data.meeting?.airport?.place);
+						set('meetingDateAirport', data.meeting?.airport?.date);
+						set('meetingTimeAirport', data.meeting?.airport?.time);
+						set('meetingHostAirport', data.meeting?.airport?.contact);
+						set('meetingPhoneAirport', data.meeting?.airport?.phone);
+						setChecked('localMeetingInclude', data.meeting?.local?.include !== false);
+						set('meetingPlaceLocal', data.meeting?.local?.place);
+						set('meetingDateLocal', data.meeting?.local?.date);
+						set('meetingTimeLocal', data.meeting?.local?.time);
+						set('meetingGuideLocal', data.meeting?.local?.contact);
+						set('meetingPhoneLocal', data.meeting?.local?.phone);
+						set('meetingFont', data.meeting?.style?.font);
+						set('meetingFontSize', data.meeting?.style?.size || '14');
+						set('meetingColorHex', data.meeting?.style?.color || '#1f2937');
+						set('meetingAlign', data.meeting?.style?.align || 'left');
+						if ($('#meetingColor')) $('#meetingColor').value = data.meeting?.style?.color || '#1f2937';
+
+						setChecked('flightSectionIncludeToggle', data.flight?.sectionIncluded !== false);
+						set('departureAirport', data.flight?.out?.depAirport);
+						set('arrivalAirport', data.flight?.out?.arrAirport);
+						set('departureTime', data.flight?.out?.depTime);
+						set('arrivalTime', data.flight?.out?.arrTime);
+						set('departureFlight', data.flight?.out?.flightNo);
+						set('departureFlightDuration', data.flight?.out?.duration);
+						set('returnDepartureAirport', data.flight?.ret?.depAirport);
+						set('returnArrivalAirport', data.flight?.ret?.arrAirport);
+						set('returnDepartureTime', data.flight?.ret?.depTime);
+						set('returnArrivalTime', data.flight?.ret?.arrTime);
+						set('returnFlight', data.flight?.ret?.flightNo);
+						set('returnFlightDuration', data.flight?.ret?.duration);
+						set('flightFont', data.flight?.style?.font);
+						set('flightFontSize', data.flight?.style?.size || '14');
+						set('flightColorHex', data.flight?.style?.color || '#1f2937');
+						set('flightAlign', data.flight?.style?.align || 'left');
+						if ($('#flightColor')) $('#flightColor').value = data.flight?.style?.color || '#1f2937';
+
+						// 회사 정보 및 미리보기 토글
+						set('companyName', data.company?.name);
+						set('companyPhone', data.company?.phone);
+						set('companyAddress', data.company?.address);
+						setChecked('companyPhoneIncludeToggle', data.company?.showPhone !== false);
+						setChecked('companyAddressIncludeToggle', data.company?.showAddress !== false);
+						set('managerName', data.company?.manager?.name);
+						set('managerPhone', data.company?.manager?.phone);
+						set('managerEmail', data.company?.manager?.email);
+						set('companyFont', data.company?.style?.font);
+						set('companyFontSize', data.company?.style?.size || '14');
+						set('companyColorHex', data.company?.style?.color || '#1f2937');
+						set('companyAlign', data.company?.style?.align || 'left');
+						if ($('#companyColor')) $('#companyColor').value = data.company?.style?.color || '#1f2937';
+
+						// 현지 정보 복원
+						set('additionalTitle', data.additional?.title || '현지 정보');
+						set('additionalInfo', data.additional?.text);
+						set('additionalFont', data.additional?.style?.font);
+						set('additionalFontSize', data.additional?.style?.size || '14');
+						set('additionalColorHex', data.additional?.style?.color || '#1f2937');
+						set('additionalAlign', data.additional?.style?.align || 'left');
+						if ($('#additionalColor')) $('#additionalColor').value = data.additional?.style?.color || '#1f2937';
+
+						// 간략 일정 복원
+						const container = document.getElementById('scheduleContainer');
+						if (container && Array.isArray(data.schedules)) {
+							const template = container.querySelector('.schedule-item');
+							if (template) {
+								container.innerHTML = '';
+								data.schedules.forEach(function (s) {
+									const item = template.cloneNode(true);
+									item.querySelector('.schedule-day') && (item.querySelector('.schedule-day').value = s.day || '');
+									item.querySelector('.schedule-date') && (item.querySelector('.schedule-date').value = s.date || '');
+									item.querySelector('.schedule-title') && (item.querySelector('.schedule-title').value = s.title || '');
+									item.querySelector('.schedule-detail') && (item.querySelector('.schedule-detail').value = s.detail || '');
+									item.querySelector('.schedule-hotel') && (item.querySelector('.schedule-hotel').value = s.hotel || '');
+									item.querySelector('.schedule-meal') && (item.querySelector('.schedule-meal').value = s.meal || '');
+									container.appendChild(item);
+								});
+							}
+						}
+						set('teeupFont', data.scheduleStyle?.font);
+						set('teeupFontSize', data.scheduleStyle?.size || '14');
+						set('teeupColorHex', data.scheduleStyle?.color || '#1f2937');
+						set('teeupAlign', data.scheduleStyle?.align || 'left');
+						if ($('#teeupColor')) $('#teeupColor').value = data.scheduleStyle?.color || '#1f2937';
                     } catch {}
                     localStorage.removeItem('__pending_load__');
                 }

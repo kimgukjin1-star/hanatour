@@ -181,17 +181,118 @@
         .ql-editor-content ol {
             list-style-type: decimal;
         }
+
+        /* 텍스트 편집 가능 영역 */
+        .editable {
+            cursor: text;
+            user-select: text;
+        }
+
+        .editable:hover {
+            outline: 1px dashed #667eea;
+            outline-offset: 2px;
+        }
+
+        /* 텍스트 선택 툴바 */
+        .text-toolbar {
+            position: fixed;
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            padding: 0.5rem;
+            display: none;
+            z-index: 10000;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .text-toolbar.active {
+            display: flex;
+        }
+
+        .toolbar-btn {
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+            min-width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .toolbar-btn:hover {
+            background: #f0f0f0;
+            border-color: #667eea;
+        }
+
+        .toolbar-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .color-picker-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        .color-picker {
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .font-size-input {
+            width: 60px;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
+    <!-- 텍스트 편집 툴바 -->
+    <div class="text-toolbar" id="textToolbar">
+        <button class="toolbar-btn" onclick="formatText('bold')" title="굵게">
+            <i class="fas fa-bold"></i>
+        </button>
+        <button class="toolbar-btn" onclick="formatText('italic')" title="기울임">
+            <i class="fas fa-italic"></i>
+        </button>
+        <button class="toolbar-btn" onclick="formatText('underline')" title="밑줄">
+            <i class="fas fa-underline"></i>
+        </button>
+        <div class="color-picker-wrapper">
+            <input type="color" class="color-picker" id="textColorPicker" title="글자 색상" onchange="changeTextColor(this.value)">
+        </div>
+        <div class="color-picker-wrapper">
+            <input type="color" class="color-picker" id="bgColorPicker" title="배경 색상" onchange="changeBackgroundColor(this.value)">
+        </div>
+        <input type="number" class="font-size-input" id="fontSizeInput" placeholder="크기" min="8" max="72" title="글자 크기">
+        <button class="toolbar-btn" onclick="changeFontSize()" title="크기 적용">
+            <i class="fas fa-text-height"></i>
+        </button>
+        <button class="toolbar-btn" onclick="clearFormatting()" title="서식 지우기">
+            <i class="fas fa-eraser"></i>
+        </button>
+    </div>
+
     <div class="preview-card" id="previewContent">
         <div class="header-section">
-            <h1 id="title" class="text-4xl font-bold text-gray-800 mb-2"></h1>
-            <p id="period" class="text-xl text-gray-600"></p>
+            <h1 id="title" class="text-4xl font-bold text-gray-800 mb-2 editable" contenteditable="true"></h1>
+            <p id="period" class="text-xl text-gray-600 editable" contenteditable="true"></p>
             <div id="titleImage" class="mt-4"></div>
         </div>
 
-        <div id="contentArea"></div>
+        <div id="contentArea" class="editable"></div>
     </div>
 
     <div class="share-buttons no-print">
@@ -212,8 +313,25 @@
     <script>
         const $ = (sel, root=document) => root.querySelector(sel);
         const getParam = (key) => new URLSearchParams(location.search).get(key);
-        const decode = (s) => JSON.parse(LZString.decompressFromEncodedURIComponent(decodeURIComponent(s||''))||'{}');
+        const decode = (s) => {
+            try {
+                return JSON.parse(LZString.decompressFromEncodedURIComponent(decodeURIComponent(s||''))||'{}');
+            } catch (e) {
+                console.error('미리보기 데이터 해석 오류:', e);
+                alert('미리보기 데이터를 불러오는 중 오류가 발생했습니다.');
+                return {};
+            }
+        };
         const fmt = (v) => v ? v : '-';
+        const esc = (s='') => String(s)
+            .replace(/&/g,'&amp;')
+            .replace(/</g,'&lt;')
+            .replace(/>/g,'&gt;');
+        const linesToList = (s) => {
+            const lines = String(s||'').split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+            if (!lines.length) return '';
+            return `<ul class="list-disc pl-5 space-y-1 text-gray-700">${lines.map(l=>`<li>${esc(l)}</li>`).join('')}</ul>`;
+        };
         const fmtCurrency = (n) => {
             if (!n) return '-';
             const num = Number(String(n).replace(/[^\d]/g, ''));
@@ -223,21 +341,47 @@
         function render() {
             const d = decode(getParam('d'));
             // header
-            $('#title').textContent = d.meta?.title || '';
+            const titleEl = $('#title');
+            titleEl.textContent = d.meta?.title || '';
+
+            // 타이틀 스타일 적용
+            if (d.meta?.titleStyle) {
+                if (d.meta.titleStyle.font) titleEl.style.fontFamily = d.meta.titleStyle.font;
+                if (d.meta.titleStyle.size) titleEl.style.fontSize = d.meta.titleStyle.size + 'px';
+                if (d.meta.titleStyle.color) titleEl.style.color = d.meta.titleStyle.color;
+                if (d.meta.titleStyle.align) titleEl.style.textAlign = d.meta.titleStyle.align;
+            }
+
             const start = d.period?.start || '';
             const end = d.period?.end || '';
-            $('#period').textContent = start && end ? `${start} ~ ${end}` : (start || end || '');
+            const periodEl = $('#period');
+            periodEl.textContent = start && end ? `${start} ~ ${end}` : (start || end || '');
+
+            // 기간 스타일 적용
+            if (d.period?.style) {
+                if (d.period.style.font) periodEl.style.fontFamily = d.period.style.font;
+                if (d.period.style.size) periodEl.style.fontSize = d.period.style.size + 'px';
+                if (d.period.style.color) periodEl.style.color = d.period.style.color;
+                if (d.period.style.align) periodEl.style.textAlign = d.period.style.align;
+            }
 
             const content = $('#contentArea');
             const blocks = [];
 
             // price
             if (d.prices?.included) {
+                const priceStyle = d.prices?.style || {};
+                const priceFont = priceStyle.font ? `font-family: ${priceStyle.font};` : '';
+                const priceSize = priceStyle.size ? `font-size: ${priceStyle.size}px;` : '';
+                const priceColor = priceStyle.color ? `color: ${priceStyle.color};` : '';
+                const priceAlign = priceStyle.align ? `text-align: ${priceStyle.align};` : '';
+                const priceStyleAttr = `style="${priceFont}${priceSize}${priceColor}${priceAlign}"`;
+
                 blocks.push(`
                     <div class="section-box purple">
                         <h3 class="font-bold text-gray-800 mb-2">상품가격</h3>
                         <div class="overflow-hidden border border-gray-200 rounded-lg">
-                            <table class="w-full">
+                            <table class="w-full" ${priceStyleAttr}>
                                 <thead class="bg-purple-50">
                                     <tr>
                                         <th class="py-2 px-3 text-left">구분</th>
@@ -268,6 +412,13 @@
             const exc = (d.expense?.exc || []).filter(Boolean);
             const opt = (d.expense?.opt || []).filter(Boolean);
             if (hasInc || exc.length || opt.length) {
+                const expenseStyle = d.expense?.style || {};
+                const expenseFont = expenseStyle.font ? `font-family: ${expenseStyle.font};` : '';
+                const expenseSize = expenseStyle.size ? `font-size: ${expenseStyle.size}px;` : '';
+                const expenseColor = expenseStyle.color ? `color: ${expenseStyle.color};` : '';
+                const expenseAlign = expenseStyle.align ? `text-align: ${expenseStyle.align};` : '';
+                const expenseStyleAttr = `style="${expenseFont}${expenseSize}${expenseColor}${expenseAlign}"`;
+
                 const incList = [
                     ['[교통]', d.expense?.inc?.transport],
                     ['[숙박]', d.expense?.inc?.hotel],
@@ -281,7 +432,7 @@
                 const excList = exc.map(v => `<li class="flex gap-2"><span class="text-red-500 font-bold">✕</span><div class="text-gray-700">${v}</div></li>`).join('');
                 const optList = opt.map(v => `<li class="flex gap-2"><span class="text-blue-500 font-bold">○</span><div class="text-gray-700">${v}</div></li>`).join('');
                 blocks.push(`
-                    <div class="section-box purple">
+                    <div class="section-box purple" ${expenseStyleAttr}>
                         <h3 class="font-bold text-gray-800 mb-2">포함/불포함/선택경비 정보</h3>
                         <div class="grid md:grid-cols-2 gap-6">
                             <div>
@@ -300,8 +451,10 @@
 
             // meeting
             if (d.meeting?.sectionIncluded) {
+                const meetingStyle = d.meeting?.style || {};
+                const meetingStyleAttr = `style="${meetingStyle.font ? `font-family:${meetingStyle.font};` : ''}${meetingStyle.size ? `font-size:${meetingStyle.size}px;` : ''}${meetingStyle.color ? `color:${meetingStyle.color};` : ''}${meetingStyle.align ? `text-align:${meetingStyle.align};` : ''}"`;
                 const airport = d.meeting.airport?.include ? `
-                    <div class="bg-white border rounded p-3">
+                    <div class="bg-white border rounded p-3" ${meetingStyleAttr}>
                         <div class="font-bold text-blue-700 mb-1">공항 미팅</div>
                         <div class="info-row"><div class="info-label">장소</div><div class="info-value">${fmt(d.meeting.airport.place)}</div></div>
                         <div class="info-row"><div class="info-label">일자</div><div class="info-value">${fmt(d.meeting.airport.date)}</div></div>
@@ -310,7 +463,7 @@
                         <div class="info-row"><div class="info-label">전화</div><div class="info-value">${fmt(d.meeting.airport.phone)}</div></div>
                     </div>` : '';
                 const local = d.meeting.local?.include ? `
-                    <div class="bg-white border rounded p-3">
+                    <div class="bg-white border rounded p-3" ${meetingStyleAttr}>
                         <div class="font-bold text-blue-700 mb-1">현지 미팅</div>
                         <div class="info-row"><div class="info-label">장소</div><div class="info-value">${fmt(d.meeting.local.place)}</div></div>
                         <div class="info-row"><div class="info-label">일자</div><div class="info-value">${fmt(d.meeting.local.date)}</div></div>
@@ -330,11 +483,13 @@
 
             // flight
             if (d.flight?.sectionIncluded) {
+                const flightStyle = d.flight?.style || {};
+                const flightStyleAttr = `style="${flightStyle.font ? `font-family:${flightStyle.font};` : ''}${flightStyle.size ? `font-size:${flightStyle.size}px;` : ''}${flightStyle.color ? `color:${flightStyle.color};` : ''}${flightStyle.align ? `text-align:${flightStyle.align};` : ''}"`;
                 blocks.push(`
                     <div class="section-box blue">
                         <h3 class="font-bold text-gray-800 mb-2">항공편 정보</h3>
                         <div class="grid md:grid-cols-2 gap-4">
-                            <div class="bg-white border rounded p-3">
+                            <div class="bg-white border rounded p-3" ${flightStyleAttr}>
                                 <div class="font-bold text-blue-700 mb-1">출발편</div>
                                 <div class="info-row"><div class="info-label">출발 공항</div><div class="info-value">${fmt(d.flight.out.depAirport)}</div></div>
                                 <div class="info-row"><div class="info-label">도착 공항</div><div class="info-value">${fmt(d.flight.out.arrAirport)}</div></div>
@@ -343,7 +498,7 @@
                                 <div class="info-row"><div class="info-label">편명</div><div class="info-value">${fmt(d.flight.out.flightNo)}</div></div>
                                 <div class="info-row"><div class="info-label">비행시간</div><div class="info-value">${fmt(d.flight.out.duration)}</div></div>
                             </div>
-                            <div class="bg-white border rounded p-3">
+                            <div class="bg-white border rounded p-3" ${flightStyleAttr}>
                                 <div class="font-bold text-blue-700 mb-1">귀국편</div>
                                 <div class="info-row"><div class="info-label">출발 공항</div><div class="info-value">${fmt(d.flight.ret.depAirport)}</div></div>
                                 <div class="info-row"><div class="info-label">도착 공항</div><div class="info-value">${fmt(d.flight.ret.arrAirport)}</div></div>
@@ -357,42 +512,65 @@
                 `);
             }
 
-            // schedules
+            // schedules - 세로 정렬 및 줄바꿈(엔터) 라인화
             if ((d.schedules||[]).length) {
-                const items = d.schedules.map(s => `
-                    <div class="bg-white border rounded p-3">
-                        <div class="font-bold text-green-700">${fmt(s.day)} ${fmt(s.title)}</div>
-                        <div class="text-sm text-gray-600">${fmt(s.date)}</div>
-                        ${s.detail ? `<div class="mt-2 text-gray-700">${s.detail}</div>` : ''}
-                        <div class="mt-2 text-sm text-gray-700"><span class="font-semibold">숙소</span> ${fmt(s.hotel)} · <span class="font-semibold">식사</span> ${fmt(s.meal)}</div>
-                    </div>
-                `).join('');
+                const scheduleStyle = d.scheduleStyle || {};
+                const scheduleStyleAttr = `style="${scheduleStyle.font ? `font-family:${scheduleStyle.font};` : ''}${scheduleStyle.size ? `font-size:${scheduleStyle.size}px;` : ''}${scheduleStyle.color ? `color:${scheduleStyle.color};` : ''}${scheduleStyle.align ? `text-align:${scheduleStyle.align};` : ''}"`;
+                const items = d.schedules.map(s => {
+                    const day = esc(fmt(s.day));
+                    const date = esc(fmt(s.date));
+                    const titleList = linesToList(s.title);
+                    const detailList = linesToList(s.detail);
+                    const hotelList = linesToList(s.hotel);
+                    const mealList = linesToList(s.meal);
+                    return `
+                        <div class="bg-white border rounded p-4" ${scheduleStyleAttr}>
+                            <div class="flex items-baseline justify-between">
+                                <div class="text-lg font-extrabold text-green-700">${day}</div>
+                                <div class="text-sm text-gray-500">${date}</div>
+                            </div>
+                            ${titleList ? `<div class="mt-2">${titleList}</div>` : ''}
+                            ${detailList ? `<div class="mt-2">${detailList}</div>` : ''}
+                            ${(hotelList || mealList) ? `
+                                <div class="mt-3 space-y-2">
+                                    ${hotelList ? `<div><span class="font-semibold text-gray-800 mr-2">숙소</span>${hotelList}</div>` : ''}
+                                    ${mealList ? `<div><span class="font-semibold text-gray-800 mr-2">식사</span>${mealList}</div>` : ''}
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                }).join('');
                 blocks.push(`
                     <div class="section-box green">
                         <h3 class="font-bold text-gray-800 mb-2">간략 일정표</h3>
-                        <div class="grid md:grid-cols-2 gap-4">${items}</div>
+                        <div class="flex flex-col gap-4">${items}</div>
                     </div>
                 `);
             }
 
             // additional
             if (d.additional?.text) {
+                const additionalTitle = d.additional?.title || '현지 정보';
+                const additionalStyle = d.additional?.style || {};
+                const additionalStyleAttr = `style="${additionalStyle.font ? `font-family:${additionalStyle.font};` : ''}${additionalStyle.size ? `font-size:${additionalStyle.size}px;` : ''}${additionalStyle.color ? `color:${additionalStyle.color};` : ''}${additionalStyle.align ? `text-align:${additionalStyle.align};` : ''}"`;
                 blocks.push(`
                     <div class="section-box pink">
-                        <h3 class="font-bold text-gray-800 mb-2">현지 정보</h3>
-                        <div class="text-gray-700 ql-editor-content">${d.additional.text.replace(/\n/g,'<br>')}</div>
+                        <h3 class="font-bold text-gray-800 mb-2">${esc(additionalTitle)}</h3>
+                        <div class="text-gray-700 ql-editor-content" ${additionalStyleAttr}>${d.additional.text.replace(/\n/g,'<br>')}</div>
                     </div>
                 `);
             }
 
             // company
             if (d.company && (d.company.name || d.company.phone || d.company.address)) {
+                const companyStyle = d.company?.style || {};
+                const companyStyleAttr = `style="${companyStyle.font ? `font-family:${companyStyle.font};` : ''}${companyStyle.size ? `font-size:${companyStyle.size}px;` : ''}${companyStyle.color ? `color:${companyStyle.color};` : ''}${companyStyle.align ? `text-align:${companyStyle.align};` : ''}"`;
                 blocks.push(`
-                    <div class="section-box">
+                    <div class="section-box" ${companyStyleAttr}>
                         <h3 class="font-bold text-gray-800 mb-2">회사 정보</h3>
                         <div class="info-row"><div class="info-label">회사명</div><div class="info-value">${fmt(d.company.name)}</div></div>
-                        <div class="info-row"><div class="info-label">전화</div><div class="info-value">${fmt(d.company.phone)}</div></div>
-                        <div class="info-row"><div class="info-label">주소</div><div class="info-value">${fmt(d.company.address)}</div></div>
+                        ${d.company.showPhone !== false ? `<div class="info-row"><div class="info-label">전화</div><div class="info-value">${fmt(d.company.phone)}</div></div>` : ''}
+                        ${d.company.showAddress !== false ? `<div class="info-row"><div class="info-label">주소</div><div class="info-value">${fmt(d.company.address)}</div></div>` : ''}
                         ${(d.company.manager?.name||d.company.manager?.phone||d.company.manager?.email) ? `
                         <div class="mt-3">
                             <div class="font-bold text-gray-700 mb-1">담당자</div>
@@ -418,6 +596,157 @@
             link.href = canvas.toDataURL('image/png');
             link.click();
         }
+
+        // 텍스트 편집 기능
+        let savedRange = null;
+
+        // 텍스트 선택 이벤트
+        document.addEventListener('mouseup', function(e) {
+            // 툴바 버튼 클릭 시 무시
+            if (e.target.closest('.text-toolbar')) {
+                return;
+            }
+
+            const selection = window.getSelection();
+            const selectedText = selection.toString().trim();
+
+            if (selectedText.length > 0 && selection.rangeCount > 0) {
+                savedRange = selection.getRangeAt(0).cloneRange();
+                showToolbar(e.pageX, e.pageY);
+            } else {
+                hideToolbar();
+            }
+        });
+
+        // 툴바 표시
+        function showToolbar(x, y) {
+            const toolbar = document.getElementById('textToolbar');
+            toolbar.style.left = Math.min(x, window.innerWidth - 400) + 'px';
+            toolbar.style.top = Math.max((y - 70), 10) + 'px';
+            toolbar.classList.add('active');
+        }
+
+        // 툴바 숨기기
+        function hideToolbar() {
+            const toolbar = document.getElementById('textToolbar');
+            toolbar.classList.remove('active');
+        }
+
+        // Selection 복원
+        function restoreSelection() {
+            if (savedRange) {
+                const selection = window.getSelection();
+                selection.removeAllRanges();
+                selection.addRange(savedRange);
+                return true;
+            }
+            return false;
+        }
+
+        // 텍스트 서식 적용
+        function formatText(command) {
+            if (restoreSelection()) {
+                document.execCommand(command, false, null);
+                // 서식 적용 후 selection 저장
+                const selection = window.getSelection();
+                if (selection.rangeCount > 0) {
+                    savedRange = selection.getRangeAt(0).cloneRange();
+                }
+            }
+        }
+
+        // 글자 색상 변경
+        function changeTextColor(color) {
+            if (restoreSelection()) {
+                document.execCommand('foreColor', false, color);
+                // 색상 변경 후 selection 저장
+                const selection = window.getSelection();
+                if (selection.rangeCount > 0) {
+                    savedRange = selection.getRangeAt(0).cloneRange();
+                }
+            }
+        }
+
+        // 배경 색상 변경
+        function changeBackgroundColor(color) {
+            if (restoreSelection()) {
+                document.execCommand('hiliteColor', false, color);
+                // 배경색 변경 후 selection 저장
+                const selection = window.getSelection();
+                if (selection.rangeCount > 0) {
+                    savedRange = selection.getRangeAt(0).cloneRange();
+                }
+            }
+        }
+
+        // 글자 크기 변경
+        function changeFontSize() {
+            const fontSize = document.getElementById('fontSizeInput').value;
+            if (fontSize && restoreSelection()) {
+                const selection = window.getSelection();
+                if (selection.rangeCount > 0) {
+                    const range = selection.getRangeAt(0);
+                    const span = document.createElement('span');
+                    span.style.fontSize = fontSize + 'px';
+
+                    // 선택된 내용을 span으로 감싸기
+                    const fragment = range.extractContents();
+                    span.appendChild(fragment);
+                    range.insertNode(span);
+
+                    // 새로운 range 설정
+                    range.selectNode(span);
+                    selection.removeAllRanges();
+                    selection.addRange(range);
+                    savedRange = range.cloneRange();
+                }
+            }
+        }
+
+        // 서식 지우기
+        function clearFormatting() {
+            if (restoreSelection()) {
+                document.execCommand('removeFormat', false, null);
+                document.execCommand('unlink', false, null);
+
+                // 인라인 스타일도 제거
+                const selection = window.getSelection();
+                if (selection.rangeCount > 0) {
+                    const range = selection.getRangeAt(0);
+                    const container = range.commonAncestorContainer;
+                    const parent = container.nodeType === 3 ? container.parentElement : container;
+
+                    // span 태그의 스타일 제거
+                    if (parent && parent.tagName === 'SPAN') {
+                        parent.removeAttribute('style');
+                    }
+
+                    savedRange = selection.getRangeAt(0).cloneRange();
+                }
+            }
+        }
+
+        // contentArea 내부 요소들도 편집 가능하게 설정
+        function makeContentEditable() {
+            const contentArea = document.getElementById('contentArea');
+            contentArea.setAttribute('contenteditable', 'true');
+
+            // 모든 텍스트 요소들을 편집 가능하게
+            const editableElements = contentArea.querySelectorAll('h3, p, div, td, li, span');
+            editableElements.forEach(el => {
+                if (!el.querySelector('input') && !el.querySelector('button')) {
+                    el.setAttribute('contenteditable', 'true');
+                    el.classList.add('editable');
+                }
+            });
+        }
+
+        // render 함수 실행 후 편집 가능하게 설정
+        const originalRender = render;
+        render = function() {
+            originalRender();
+            setTimeout(makeContentEditable, 100);
+        };
     </script>
 </body>
 </html>
