@@ -45,6 +45,9 @@
 .table {
   display: table;
 }
+.h-auto {
+  height: auto;
+}
 .max-h-\[80vh\] {
   max-height: 80vh;
 }

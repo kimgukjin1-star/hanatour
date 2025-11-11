@@ -352,6 +352,14 @@
                 if (d.meta.titleStyle.align) titleEl.style.textAlign = d.meta.titleStyle.align;
             }
 
+            // 타이틀 이미지 렌더링
+            const titleImageEl = $('#titleImage');
+            if (d.meta?.titleImage && titleImageEl) {
+                titleImageEl.innerHTML = `<img src="${d.meta.titleImage}" class="max-w-full h-auto rounded-lg shadow-md" alt="Title Image">`;
+            } else if (titleImageEl) {
+                titleImageEl.innerHTML = '';
+            }
+
             const start = d.period?.start || '';
             const end = d.period?.end || '';
             const periodEl = $('#period');

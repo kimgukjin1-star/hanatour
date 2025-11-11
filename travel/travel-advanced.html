@@ -1402,6 +1402,7 @@
                 const data = {
                     meta: {
                         title: $('#title')?.value || '',
+                        titleImage: $('#titleImage')?.getAttribute('data-image') || '',
                         titleStyle: {
                             font: $('#titleFont')?.value || '',
                             size: $('#titleFontSize')?.value || '36',
@@ -2157,6 +2158,25 @@
 						const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val ?? ''; };
 						const setChecked = (id, val) => { const el = document.getElementById(id); if (el) el.checked = !!val; };
                         set('title', data.meta?.title);
+                        // 타이틀 이미지 복원
+                        if (data.meta?.titleImage) {
+                            const titleImageInput = $('#titleImage');
+                            const titleImagePreview = $('#titleImagePreview');
+                            if (titleImageInput && titleImagePreview) {
+                                titleImageInput.setAttribute('data-image', data.meta.titleImage);
+                                titleImagePreview.innerHTML = `<img src="${data.meta.titleImage}" class="max-w-full h-32 object-contain rounded-lg border-2 border-gray-200"><button type="button" class="remove-image mt-1 text-red-500 text-sm hover:text-red-700"><i class="fas fa-times-circle mr-1"></i>이미지 제거</button>`;
+                                titleImagePreview.classList.remove('hidden');
+                                const removeBtn = titleImagePreview.querySelector('.remove-image');
+                                if (removeBtn) {
+                                    removeBtn.addEventListener('click', function() {
+                                        titleImageInput.value = '';
+                                        titleImageInput.removeAttribute('data-image');
+                                        titleImagePreview.innerHTML = '';
+                                        titleImagePreview.classList.add('hidden');
+                                    });
+                                }
+                            }
+                        }
                         set('titleFont', data.meta?.titleStyle?.font);
                         set('titleFontSize', data.meta?.titleStyle?.size || '36');
                         set('titleColorHex', data.meta?.titleStyle?.color || '#ffffff');
@@ -2282,6 +2302,41 @@
                     localStorage.removeItem('__pending_load__');
                 }
             })();
+
+            // 이미지 파일 처리 (base64 변환)
+            const handleImageUpload = function(inputId, previewId) {
+                const input = document.getElementById(inputId);
+                const preview = document.getElementById(previewId);
+                if (!input || !preview) return;
+
+                input.addEventListener('change', function() {
+                    if (input.files && input.files[0]) {
+                        const file = input.files[0];
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            // base64 데이터를 input의 data 속성에 저장
+                            input.setAttribute('data-image', e.target.result);
+                            // 미리보기 표시
+                            preview.innerHTML = `<img src="${e.target.result}" class="max-w-full h-32 object-contain rounded-lg border-2 border-gray-200"><button type="button" class="remove-image mt-1 text-red-500 text-sm hover:text-red-700"><i class="fas fa-times-circle mr-1"></i>이미지 제거</button>`;
+                            preview.classList.remove('hidden');
+                            // 제거 버튼 이벤트
+                            const removeBtn = preview.querySelector('.remove-image');
+                            if (removeBtn) {
+                                removeBtn.addEventListener('click', function() {
+                                    input.value = '';
+                                    input.removeAttribute('data-image');
+                                    preview.innerHTML = '';
+                                    preview.classList.add('hidden');
+                                });
+                            }
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            };
+
+            // 타이틀 이미지 처리
+            handleImageUpload('titleImage', 'titleImagePreview');
         });
     </script>
     <script src="../js/travel.js"></script>
