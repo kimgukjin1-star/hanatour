@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>일반 여행 안내문 미리보기</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../fonts/custom-fonts.css">
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        .preview-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 3rem;
+        }
+        .section-box {
+            background: #f8f9fa;
+            border-left: 4px solid;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-radius: 8px;
+        }
+        .section-box.purple { border-color: #667eea; }
+        .section-box.blue { border-color: #3b82f6; }
+        .section-box.green { border-color: #10b981; }
+        .section-box.sky { border-color: #0ea5e9; }
+        .section-box.orange { border-color: #f59e0b; }
+        .section-box.pink { border-color: #ec4899; }
+        
+        .header-section {
+            text-align: center;
+            padding: 2rem 0;
+            border-bottom: 3px solid #667eea;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+        
+        .header-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-size: cover;
+            background-position: center;
+            opacity: 0.3;
+            border-radius: 12px;
+        }
+        
+        .share-buttons {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+            padding: 1rem;
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            z-index: 1000;
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        @media print {
+            .share-buttons, .no-print {
+                display: none !important;
+            }
+            body {
+                background: white;
+            }
+            .preview-card {
+                box-shadow: none;
+                margin: 0;
+            }
+        }
+        
+        .preview-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+        
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #4b5563;
+        }
+        
+        .info-value {
+            color: #1f2937;
+        }
+        
+        /* Quill 에디터 콘텐츠 스타일 */
+        .ql-editor-content {
+            line-height: 1.6;
+        }
+        .ql-editor-content p {
+            margin-bottom: 0.5rem;
+        }
+        .ql-editor-content strong {
+            font-weight: bold;
+        }
+        .ql-editor-content em {
+            font-style: italic;
+        }
+        .ql-editor-content u {
+            text-decoration: underline;
+        }
+        .ql-editor-content s {
+            text-decoration: line-through;
+        }
+        .ql-editor-content h1 {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        .ql-editor-content h2 {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        .ql-editor-content h3 {
+            font-size: 1.25em;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        .ql-editor-content ul, .ql-editor-content ol {
+            margin-left: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .ql-editor-content ul {
+            list-style-type: disc;
+        }
+        .ql-editor-content ol {
+            list-style-type: decimal;
+        }
+    </style>
+</head>
+<body>
+    <div class="preview-card" id="previewContent">
+        <div class="header-section">
+            <h1 id="title" class="text-4xl font-bold text-gray-800 mb-2"></h1>
+            <p id="period" class="text-xl text-gray-600"></p>
+            <div id="titleImage" class="mt-4"></div>
+        </div>
+
+        <div id="contentArea"></div>
+    </div>
+
+    <div class="share-buttons no-print">
+        <button onclick="window.print()" class="btn btn-primary">
+            <i class="fas fa-print mr-2"></i>인쇄하기
+        </button>
+        <button onclick="goBack()" class="btn btn-secondary">
+            <i class="fas fa-edit mr-2"></i>수정하기
+        </button>
+        <button onclick="copyLink()" class="btn btn-secondary">
+            <i class="fas fa-link mr-2"></i>링크 복사
+        </button>
+        <button onclick="saveAsImage()" class="btn btn-primary">
+            <i class="fas fa-image mr-2"></i>고해상도 이미지 저장
+        </button>
+    </div>
+
+    <script>
+        const $ = (sel, root=document) => root.querySelector(sel);
+        const getParam = (key) => new URLSearchParams(location.search).get(key);
+        const decode = (s) => JSON.parse(LZString.decompressFromEncodedURIComponent(decodeURIComponent(s||''))||'{}');
+        const fmt = (v) => v ? v : '-';
+        const fmtCurrency = (n) => {
+            if (!n) return '-';
+            const num = Number(String(n).replace(/[^\d]/g, ''));
+            return isNaN(num) ? '-' : new Intl.NumberFormat('ko-KR').format(num) + '원';
+        };
+
+        function render() {
+            const d = decode(getParam('d'));
+            // header
+            $('#title').textContent = d.meta?.title || '';
+            const start = d.period?.start || '';
+            const end = d.period?.end || '';
+            $('#period').textContent = start && end ? `${start} ~ ${end}` : (start || end || '');
+
+            const content = $('#contentArea');
+            const blocks = [];
+
+            // price
+            if (d.prices?.included) {
+                blocks.push(`
+                    <div class="section-box purple">
+                        <h3 class="font-bold text-gray-800 mb-2">상품가격</h3>
+                        <div class="overflow-hidden border border-gray-200 rounded-lg">
+                            <table class="w-full">
+                                <thead class="bg-purple-50">
+                                    <tr>
+                                        <th class="py-2 px-3 text-left">구분</th>
+                                        <th class="py-2 px-3 text-center">성인</th>
+                                        <th class="py-2 px-3 text-center">아동</th>
+                                        <th class="py-2 px-3 text-center">유아</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="bg-white">
+                                        <td class="py-3 px-3 font-semibold">기본상품</td>
+                                        <td class="py-3 px-3 text-center font-bold">${fmtCurrency(d.prices.adult)}</td>
+                                        <td class="py-3 px-3 text-center font-bold">${fmtCurrency(d.prices.child)}</td>
+                                        <td class="py-3 px-3 text-center font-bold">${fmtCurrency(d.prices.infant)}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div class="text-xs text-gray-500 px-3 py-2 bg-gray-50">
+                                ※ 유류할증료 및 세제공급가는 별도이며, 출발일 기준 변동될 수 있습니다.
+                            </div>
+                        </div>
+                    </div>
+                `);
+            }
+
+            // expense info
+            const hasInc = Object.values(d.expense?.inc || {}).some(v => (v||'').trim());
+            const exc = (d.expense?.exc || []).filter(Boolean);
+            const opt = (d.expense?.opt || []).filter(Boolean);
+            if (hasInc || exc.length || opt.length) {
+                const incList = [
+                    ['[교통]', d.expense?.inc?.transport],
+                    ['[숙박]', d.expense?.inc?.hotel],
+                    ['[식사]', d.expense?.inc?.meal],
+                    ['[관광]', d.expense?.inc?.tour],
+                    ['[보험]', d.expense?.inc?.insurance],
+                    ['[가이드]', d.expense?.inc?.guide],
+                ].filter(([,v]) => (v||'').trim()).map(([k,v]) => `
+                    <li class="flex gap-2"><span class="text-purple-600 font-bold">○</span><div><div class="font-semibold">${k}</div><div class="text-sm text-gray-600">${v}</div></div></li>
+                `).join('');
+                const excList = exc.map(v => `<li class="flex gap-2"><span class="text-red-500 font-bold">✕</span><div class="text-gray-700">${v}</div></li>`).join('');
+                const optList = opt.map(v => `<li class="flex gap-2"><span class="text-blue-500 font-bold">○</span><div class="text-gray-700">${v}</div></li>`).join('');
+                blocks.push(`
+                    <div class="section-box purple">
+                        <h3 class="font-bold text-gray-800 mb-2">포함/불포함/선택경비 정보</h3>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <h4 class="font-bold mb-2">포함내역</h4>
+                                <ul class="space-y-2">${incList || '<li class="text-gray-400 text-sm">입력된 포함내역이 없습니다.</li>'}</ul>
+                            </div>
+                            <div>
+                                <h4 class="font-bold mb-2">불포함내역</h4>
+                                <ul class="space-y-2">${excList || '<li class="text-gray-400 text-sm">입력된 불포함내역이 없습니다.</li>'}</ul>
+                            </div>
+                        </div>
+                        ${opt.length ? `<div class="mt-4"><h4 class="font-bold mb-2">선택경비</h4><ul class="space-y-2">${optList}</ul></div>` : ''}
+                    </div>
+                `);
+            }
+
+            // meeting
+            if (d.meeting?.sectionIncluded) {
+                const airport = d.meeting.airport?.include ? `
+                    <div class="bg-white border rounded p-3">
+                        <div class="font-bold text-blue-700 mb-1">공항 미팅</div>
+                        <div class="info-row"><div class="info-label">장소</div><div class="info-value">${fmt(d.meeting.airport.place)}</div></div>
+                        <div class="info-row"><div class="info-label">일자</div><div class="info-value">${fmt(d.meeting.airport.date)}</div></div>
+                        <div class="info-row"><div class="info-label">시간</div><div class="info-value">${fmt(d.meeting.airport.time)}</div></div>
+                        <div class="info-row"><div class="info-label">담당자</div><div class="info-value">${fmt(d.meeting.airport.contact)}</div></div>
+                        <div class="info-row"><div class="info-label">전화</div><div class="info-value">${fmt(d.meeting.airport.phone)}</div></div>
+                    </div>` : '';
+                const local = d.meeting.local?.include ? `
+                    <div class="bg-white border rounded p-3">
+                        <div class="font-bold text-blue-700 mb-1">현지 미팅</div>
+                        <div class="info-row"><div class="info-label">장소</div><div class="info-value">${fmt(d.meeting.local.place)}</div></div>
+                        <div class="info-row"><div class="info-label">일자</div><div class="info-value">${fmt(d.meeting.local.date)}</div></div>
+                        <div class="info-row"><div class="info-label">시간</div><div class="info-value">${fmt(d.meeting.local.time)}</div></div>
+                        <div class="info-row"><div class="info-label">가이드</div><div class="info-value">${fmt(d.meeting.local.contact)}</div></div>
+                        <div class="info-row"><div class="info-label">전화</div><div class="info-value">${fmt(d.meeting.local.phone)}</div></div>
+                    </div>` : '';
+                if (airport || local) {
+                    blocks.push(`
+                        <div class="section-box purple">
+                            <h3 class="font-bold text-gray-800 mb-2">미팅 정보</h3>
+                            <div class="grid md:grid-cols-2 gap-4">${airport}${local}</div>
+                        </div>
+                    `);
+                }
+            }
+
+            // flight
+            if (d.flight?.sectionIncluded) {
+                blocks.push(`
+                    <div class="section-box blue">
+                        <h3 class="font-bold text-gray-800 mb-2">항공편 정보</h3>
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div class="bg-white border rounded p-3">
+                                <div class="font-bold text-blue-700 mb-1">출발편</div>
+                                <div class="info-row"><div class="info-label">출발 공항</div><div class="info-value">${fmt(d.flight.out.depAirport)}</div></div>
+                                <div class="info-row"><div class="info-label">도착 공항</div><div class="info-value">${fmt(d.flight.out.arrAirport)}</div></div>
+                                <div class="info-row"><div class="info-label">출발 시간</div><div class="info-value">${fmt(d.flight.out.depTime)}</div></div>
+                                <div class="info-row"><div class="info-label">도착 시간</div><div class="info-value">${fmt(d.flight.out.arrTime)}</div></div>
+                                <div class="info-row"><div class="info-label">편명</div><div class="info-value">${fmt(d.flight.out.flightNo)}</div></div>
+                                <div class="info-row"><div class="info-label">비행시간</div><div class="info-value">${fmt(d.flight.out.duration)}</div></div>
+                            </div>
+                            <div class="bg-white border rounded p-3">
+                                <div class="font-bold text-blue-700 mb-1">귀국편</div>
+                                <div class="info-row"><div class="info-label">출발 공항</div><div class="info-value">${fmt(d.flight.ret.depAirport)}</div></div>
+                                <div class="info-row"><div class="info-label">도착 공항</div><div class="info-value">${fmt(d.flight.ret.arrAirport)}</div></div>
+                                <div class="info-row"><div class="info-label">출발 시간</div><div class="info-value">${fmt(d.flight.ret.depTime)}</div></div>
+                                <div class="info-row"><div class="info-label">도착 시간</div><div class="info-value">${fmt(d.flight.ret.arrTime)}</div></div>
+                                <div class="info-row"><div class="info-label">편명</div><div class="info-value">${fmt(d.flight.ret.flightNo)}</div></div>
+                                <div class="info-row"><div class="info-label">비행시간</div><div class="info-value">${fmt(d.flight.ret.duration)}</div></div>
+                            </div>
+                        </div>
+                    </div>
+                `);
+            }
+
+            // schedules
+            if ((d.schedules||[]).length) {
+                const items = d.schedules.map(s => `
+                    <div class="bg-white border rounded p-3">
+                        <div class="font-bold text-green-700">${fmt(s.day)} ${fmt(s.title)}</div>
+                        <div class="text-sm text-gray-600">${fmt(s.date)}</div>
+                        ${s.detail ? `<div class="mt-2 text-gray-700">${s.detail}</div>` : ''}
+                        <div class="mt-2 text-sm text-gray-700"><span class="font-semibold">숙소</span> ${fmt(s.hotel)} · <span class="font-semibold">식사</span> ${fmt(s.meal)}</div>
+                    </div>
+                `).join('');
+                blocks.push(`
+                    <div class="section-box green">
+                        <h3 class="font-bold text-gray-800 mb-2">간략 일정표</h3>
+                        <div class="grid md:grid-cols-2 gap-4">${items}</div>
+                    </div>
+                `);
+            }
+
+            // additional
+            if (d.additional?.text) {
+                blocks.push(`
+                    <div class="section-box pink">
+                        <h3 class="font-bold text-gray-800 mb-2">현지 정보</h3>
+                        <div class="text-gray-700 ql-editor-content">${d.additional.text.replace(/\n/g,'<br>')}</div>
+                    </div>
+                `);
+            }
+
+            // company
+            if (d.company && (d.company.name || d.company.phone || d.company.address)) {
+                blocks.push(`
+                    <div class="section-box">
+                        <h3 class="font-bold text-gray-800 mb-2">회사 정보</h3>
+                        <div class="info-row"><div class="info-label">회사명</div><div class="info-value">${fmt(d.company.name)}</div></div>
+                        <div class="info-row"><div class="info-label">전화</div><div class="info-value">${fmt(d.company.phone)}</div></div>
+                        <div class="info-row"><div class="info-label">주소</div><div class="info-value">${fmt(d.company.address)}</div></div>
+                        ${(d.company.manager?.name||d.company.manager?.phone||d.company.manager?.email) ? `
+                        <div class="mt-3">
+                            <div class="font-bold text-gray-700 mb-1">담당자</div>
+                            <div class="info-row"><div class="info-label">이름</div><div class="info-value">${fmt(d.company.manager?.name)}</div></div>
+                            <div class="info-row"><div class="info-label">전화</div><div class="info-value">${fmt(d.company.manager?.phone)}</div></div>
+                            <div class="info-row"><div class="info-label">이메일</div><div class="info-value">${fmt(d.company.manager?.email)}</div></div>
+                        </div>`: '' }
+                    </div>
+                `);
+            }
+
+            content.innerHTML = blocks.join('');
+        }
+
+        document.addEventListener('DOMContentLoaded', render);
+        function goBack(){ history.back(); }
+        function copyLink(){ navigator.clipboard.writeText(location.href).then(()=>alert('링크가 복사되었습니다.')); }
+        async function saveAsImage(){
+            const content = document.getElementById('previewContent');
+            const canvas = await html2canvas(content, {scale:2});
+            const link = document.createElement('a');
+            link.download = 'preview.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+    </script>
+</body>
+</html>

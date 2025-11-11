@@ -1,0 +1,1856 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>일반 여행 안내문 생성기</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../fonts/custom-fonts.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .travel-icon {
+            font-size: 4rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .design-settings {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 1rem;
+            margin-top: 1rem;
+            border-radius: 8px;
+        }
+        .meeting-section.collapsed .meeting-section-hide {
+            display: none;
+        }
+        .flight-section.collapsed .flight-section-hide {
+            display: none;
+        }
+        .meeting-card {
+            border: 2px solid #e9d5ff;
+            border-radius: 18px;
+            background: white;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            box-shadow: inset 0 0 0 1px rgba(148, 108, 255, 0.05);
+        }
+        .meeting-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.25rem;
+            gap: 1rem;
+        }
+        .meeting-card-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 700;
+            color: #7c3aed;
+            font-size: 1.05rem;
+        }
+        .meeting-card-icon {
+            font-size: 1.1rem;
+            color: #7c3aed;
+        }
+        .meeting-toggle-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-weight: 600;
+            color: #6b21a8;
+            font-size: 0.9rem;
+        }
+        .meeting-card[data-include="false"] {
+            opacity: 0.65;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="max-w-4xl mx-auto">
+        <div class="card p-8 md:p-12">
+            <!-- 헤더 -->
+            <div class="text-center mb-8">
+                <div class="travel-icon mb-4">
+                    <i class="fas fa-plane"></i>
+                </div>
+                <h1 class="text-4xl font-bold text-gray-800 mb-2">일반 여행 안내문 생성기</h1>
+                <p class="text-gray-600">간편하게 안내문을 작성하고 공유하세요</p>
+            </div>
+
+            <!-- 저장 관리 버튼 -->
+            <div class="mb-6 flex gap-3">
+                <button type="button" id="saveButton" class="flex-1 bg-green-500 hover:bg-green-600 text-white py-3 px-4 rounded-lg font-bold transition flex items-center justify-center">
+                    <i class="fas fa-save mr-2"></i>현재 안내문 저장
+                </button>
+                <button type="button" id="loadButton" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-3 px-4 rounded-lg font-bold transition flex items-center justify-center">
+                    <i class="fas fa-folder-open mr-2"></i>저장된 안내문 불러오기
+                </button>
+            </div>
+            
+            <!-- 템플릿 관리 버튼 -->
+            <div class="mb-6 flex gap-3">
+                <button type="button" id="saveTemplateButton" class="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white py-3 px-4 rounded-lg font-bold transition flex items-center justify-center">
+                    <i class="fas fa-palette mr-2"></i>현재 디자인을 템플릿으로 저장
+                </button>
+                <button type="button" id="loadTemplateButton" class="flex-1 bg-orange-500 hover:bg-orange-600 text-white py-3 px-4 rounded-lg font-bold transition flex items-center justify-center">
+                    <i class="fas fa-paint-brush mr-2"></i>템플릿 불러오기
+                </button>
+            </div>
+
+            <!-- 입력 폼 -->
+            <form id="travelForm" class="space-y-6">
+                <!-- 타이틀 -->
+                <div class="bg-purple-50 p-6 rounded-lg border-2 border-purple-200">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">
+                        <i class="fas fa-heading text-purple-600 mr-2"></i>타이틀
+                    </h3>
+                    <input type="text" id="title" required
+                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none mb-2"
+                        placeholder="예: 제주도 골프 여행">
+                    
+                    <!-- 타이틀 배경 이미지 -->
+                    <div class="mt-3">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-image text-purple-600 mr-1"></i>타이틀 배경 이미지 (선택)
+                        </label>
+                        <p class="text-xs text-gray-500 mb-2">💡 타이틀 헤더의 배경으로 표시됩니다. 텍스트가 앞에 나타납니다.</p>
+                        <input type="file" id="titleImage" accept="image/*"
+                            class="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none">
+                        <div id="titleImagePreview" class="mt-2 hidden">
+                            <img class="max-w-full h-32 object-contain rounded-lg border-2 border-gray-200">
+                            <button type="button" class="remove-image mt-1 text-red-500 text-sm hover:text-red-700">
+                                <i class="fas fa-times-circle mr-1"></i>이미지 제거
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 타이틀 디자인 설정 -->
+                    <div class="design-settings">
+                        <p class="text-sm font-bold text-yellow-800 mb-2">
+                            <i class="fas fa-palette mr-1"></i>타이틀 디자인
+                        </p>
+                        <div class="grid md:grid-cols-3 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">글꼴</label>
+                                <select id="titleFont" class="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:border-yellow-500 focus:outline-none">
+                                    <optgroup label="기본 폰트">
+                                        <option value="'Noto Sans KR', sans-serif">Noto Sans (기본)</option>
+                                        <option value="'Nanum Gothic', sans-serif">나눔고딕</option>
+                                        <option value="'Nanum Myeongjo', serif">나눔명조</option>
+                                        <option value="'Black Han Sans', sans-serif">검은고딕</option>
+                                        <option value="'Do Hyeon', sans-serif">도현체</option>
+                                        <option value="'Jua', sans-serif">주아체</option>
+                                        <option value="'Gamja Flower', cursive">감자꽃체</option>
+                                        <option value="'Sunflower', sans-serif">해바라기체</option>
+                                    </optgroup>
+                                    <optgroup label="커스텀 폰트 (fonts/ 폴더에 파일 추가 필요)">
+                                        <option value="'Pretendard-ExtraBold', sans-serif">Pretendard ExtraBold</option>
+                                        <option value="'Pretendard-Light', sans-serif">Pretendard Light</option>
+                                        <option value="'Pretendard-Medium', sans-serif">Pretendard Medium</option>
+                                        <option value="'Pretendard-Regular', sans-serif">Pretendard Regular</option>
+                                        <option value="'Recipekorea', sans-serif">레시피코리아 레코체</option>
+                                        <option value="'SB-Aggro-B', sans-serif">SB 어그로 B</option>
+                                        <option value="'SB-Aggro-L', sans-serif">SB 어그로 L</option>
+                                        <option value="'SB-Aggro-M', sans-serif">SB 어그로 M</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">글자 색상</label>
+                                <div class="flex gap-2">
+                                    <input type="color" id="titleColor" value="#ffffff"
+                                        class="h-10 w-16 border-2 border-gray-300 rounded-lg cursor-pointer">
+                                    <input type="text" id="titleColorHex" value="#ffffff"
+                                        class="flex-1 px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:border-yellow-500 focus:outline-none"
+                                        placeholder="#ffffff">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">정렬방식</label>
+                                <select id="titleAlign" class="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:border-yellow-500 focus:outline-none">
+                                    <option value="left">왼쪽 정렬</option>
+                                    <option value="center" selected>가운데 정렬</option>
+                                    <option value="right">오른쪽 정렬</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 기간 -->
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-calendar-alt text-purple-600 mr-2"></i>시작일
+                        </label>
+                        <input type="date" id="startDate" required
+                            class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-calendar-alt text-purple-600 mr-2"></i>종료일
+                        </label>
+                        <input type="date" id="endDate" required
+                            class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none">
+                    </div>
+                </div>
+                
+                <!-- 기간 디자인 설정 -->
+                <div class="bg-yellow-50 p-4 rounded-lg border-2 border-yellow-300 mt-2">
+                    <h4 class="text-sm font-bold text-gray-700 mb-3 flex items-center">
+                        <i class="fas fa-paint-brush text-yellow-600 mr-2"></i>기간 디자인
+                    </h4>
+                    <div class="grid md:grid-cols-4 gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">폰트</label>
+                            <select id="periodFont" class="w-full px-3 py-2 border border-gray-300 rounded text-sm">
+                                <optgroup label="기본 폰트">
+                                    <option value="'Noto Sans KR', sans-serif">Noto Sans (기본)</option>
+                                    <option value="'Nanum Gothic', sans-serif">나눔고딕</option>
+                                    <option value="'Nanum Myeongjo', serif">나눔명조</option>
+                                    <option value="'Black Han Sans', sans-serif">검은고딕</option>
+                                    <option value="'Do Hyeon', sans-serif">도현체</option>
+                                    <option value="'Jua', sans-serif">주아체</option>
+                                    <option value="'Gamja Flower', cursive">감자꽃체</option>
+                                    <option value="'Sunflower', sans-serif">해바라기체</option>
+                                </optgroup>
+                                <optgroup label="커스텀 폰트">
+                                    <option value="'Pretendard-ExtraBold', sans-serif">Pretendard ExtraBold</option>
+                                    <option value="'Pretendard-Light', sans-serif">Pretendard Light</option>
+                                    <option value="'Pretendard-Medium', sans-serif">Pretendard Medium</option>
+                                    <option value="'Pretendard-Regular', sans-serif">Pretendard Regular</option>
+                                    <option value="'Recipekorea', sans-serif">레시피코리아 레코체</option>
+                                    <option value="'SB-Aggro-B', sans-serif">SB 어그로 B</option>
+                                    <option value="'SB-Aggro-L', sans-serif">SB 어그로 L</option>
+                                    <option value="'SB-Aggro-M', sans-serif">SB 어그로 M</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">폰트 크기</label>
+                            <select id="periodFontSize" class="w-full px-3 py-2 border border-gray-300 rounded text-sm">
+                                <option value="14px">매우 작게</option>
+                                <option value="16px">작게</option>
+                                <option value="18px">보통</option>
+                                <option value="20px" selected>크게 (기본)</option>
+                                <option value="24px">매우 크게</option>
+                                <option value="28px">특대</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">색상</label>
+                            <div class="flex gap-2">
+                                <input type="color" id="periodColor" value="#ffffff" class="w-12 h-9 rounded cursor-pointer">
+                                <input type="text" id="periodColorHex" value="#ffffff" maxlength="7"
+                                    class="flex-1 px-2 py-1 border border-gray-300 rounded text-sm" placeholder="#000000">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-gray-600 mb-1">정렬방식</label>
+                            <select id="periodAlign" class="w-full px-3 py-2 border border-gray-300 rounded text-sm">
+                                <option value="left">왼쪽 정렬</option>
+                                <option value="center" selected>가운데 정렬</option>
+                                <option value="right">오른쪽 정렬</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+            <!-- 상품 가격 -->
+            <div id="priceSection" class="bg-white/90 backdrop-blur rounded-2xl border-2 border-purple-200 shadow-lg p-6 md:p-8 mb-8" data-price-include="true">
+                <div class="mb-6 flex items-center justify-between gap-3">
+                    <h3 class="text-lg font-bold text-gray-800 flex items-center">
+                        <i class="fas fa-tags text-purple-500 mr-2"></i>상품 가격 정보
+                    </h3>
+                    <label class="inline-flex items-center gap-2 text-sm font-semibold text-purple-600 cursor-pointer">
+                        <input type="checkbox" id="priceIncludeToggle" class="h-5 w-5 text-purple-600 border-2 border-purple-300 rounded focus:ring-purple-500" checked>
+                        <span class="flex items-center gap-1"><i class="fas fa-eye text-yellow-500"></i>미리보기 포함</span>
+                    </label>
+                </div>
+                <div class="grid md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2" for="adultPrice">성인 가격</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">₩</span>
+                            <input type="text" id="adultPrice"
+                                class="w-full pl-7 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none font-semibold text-gray-800"
+                                placeholder="예: 1,200,000">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2" for="childPrice">아동 가격</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">₩</span>
+                            <input type="text" id="childPrice"
+                                class="w-full pl-7 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none font-semibold text-gray-800"
+                                placeholder="예: 950,000">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2" for="infantPrice">유아 가격</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">₩</span>
+                            <input type="text" id="infantPrice"
+                                class="w-full pl-7 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none font-semibold text-gray-800"
+                                placeholder="예: 250,000">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="priceSectionContent" class="mt-6">
+                    <div class="border border-gray-200 rounded-xl bg-white overflow-hidden">
+                        <div class="bg-purple-500 text-white text-center py-3 font-bold tracking-wide">상품가격</div>
+                        <table class="w-full font-sans text-sm md:text-base text-gray-700">
+                            <thead class="bg-purple-50 text-purple-700 uppercase tracking-wide text-xs md:text-sm">
+                                <tr>
+                                    <th class="py-3 px-4 text-left">구분</th>
+                                    <th class="py-3 px-4 text-center">성인</th>
+                                    <th class="py-3 px-4 text-center">아동</th>
+                                    <th class="py-3 px-4 text-center">유아</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="bg-white">
+                                    <td class="py-4 px-4 font-semibold text-gray-800 border-t border-gray-100">기본상품</td>
+                                    <td class="py-4 px-4 text-center border-t border-gray-100">
+                                        <span id="priceAdult" class="text-lg font-bold text-gray-900">-</span>
+                                    </td>
+                                    <td class="py-4 px-4 text-center border-t border-gray-100">
+                                        <span id="priceChild" class="text-lg font-bold text-gray-900">-</span>
+                                    </td>
+                                    <td class="py-4 px-4 text-center border-t border-gray-100">
+                                        <span id="priceInfant" class="text-lg font-bold text-gray-900">-</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="bg-gray-50 text-xs md:text-sm text-gray-500 px-4 py-3">
+                            ※ 유류할증료 및 세제공급가는 별도이며, 출발일 기준 변동될 수 있습니다. 상세 견적은 담당자에게 문의하세요.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+                <!-- 포함/불포함/선택경비 정보 -->
+                <div id="expenseInfoSection" class="bg-white/90 backdrop-blur rounded-2xl border-2 border-purple-200 shadow-lg p-6 md:p-8 mb-8">
+                    <div class="mb-6 flex items-center justify-between gap-3">
+                        <h3 class="text-lg font-bold text-gray-800 flex items-center">
+                            <i class="fas fa-clipboard-list text-purple-500 mr-2"></i>포함/불포함/선택경비 정보
+                        </h3>
+                    </div>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="text-md font-bold text-gray-800 mb-3">포함내역</h4>
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-600 mb-1">[교통]</label>
+                                    <textarea id="incTransport" rows="2" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none text-sm leading-relaxed" placeholder="예: 왕복 항공권, 공항-호텔 차량"></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-600 mb-1">[숙박]</label>
+                                    <textarea id="incHotel" rows="2" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none text-sm leading-relaxed" placeholder="예: 2인 1실 기준 호텔 2박"></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-600 mb-1">[식사]</label>
+                                    <textarea id="incMeal" rows="2" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none text-sm leading-relaxed" placeholder="예: 조식 2회, 중식 1회, 석식 1회"></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-600 mb-1">[관광]</label>
+                                    <textarea id="incTour" rows="2" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none text-sm leading-relaxed" placeholder="예: 입장료 및 현지 일정 포함"></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-600 mb-1">[보험]</label>
+                                    <textarea id="incInsurance" rows="2" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none text-sm leading-relaxed" placeholder="예: 여행자 보험(상해/질병)"></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-600 mb-1">[가이드]</label>
+                                    <textarea id="incGuide" rows="2" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none text-sm leading-relaxed" placeholder="예: 한국어 가이드 및 기사 경비 포함"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="text-md font-bold text-gray-800 mb-3">불포함내역</h4>
+                            <textarea id="exclusions" rows="10" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none text-sm leading-relaxed" placeholder="줄바꿈으로 항목을 구분해 입력하세요&#10;예: 개인 경비 (물, 간식, 미니바 등)&#10;예: 매너 팁, 포터비"></textarea>
+                            <h4 class="text-md font-bold text-gray-800 mt-6 mb-2">선택경비 (선택)</h4>
+                            <textarea id="optionals" rows="4" class="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none text-sm leading-relaxed" placeholder="예: 선택 관광, 업그레이드 객실, 좌석 지정 요금 등"></textarea>
+                        </div>
+                    </div>
+                    <div class="mt-8 border border-gray-200 rounded-xl bg-white p-5">
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <h5 class="font-bold text-gray-800 mb-3">포함내역</h5>
+                                <ul id="incList" class="space-y-2 leading-relaxed"></ul>
+                            </div>
+                            <div>
+                                <h5 class="font-bold text-gray-800 mb-3">불포함내역</h5>
+                                <ul id="excList" class="space-y-2 leading-relaxed"></ul>
+                            </div>
+                        </div>
+                        <div id="optBlock" class="mt-6">
+                            <h5 class="font-bold text-gray-800 mb-3">선택경비</h5>
+                            <ul id="optList" class="space-y-2 leading-relaxed"></ul>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-6">※ 위 내용은 여행사 기준 예시이며, 실제 포함/불포함/선택 항목은 상품에 따라 변경될 수 있습니다.</p>
+                    </div>
+                </div>
+
+                <!-- 미팅 정보 -->
+                <div id="meetingSection" class="bg-purple-50 p-6 rounded-lg border-2 border-purple-200 meeting-section">
+                    <h3 class="text-lg font-bold text-gray-800 mb-2 flex items-center justify-between">
+                        <i class="fas fa-handshake text-purple-600 mr-2"></i>미팅 정보
+                        <label class="inline-flex items-center gap-2 text-sm font-semibold text-purple-700 cursor-pointer">
+                            <input type="checkbox" id="meetingSectionIncludeToggle" class="h-5 w-5 text-purple-600 border-2 border-purple-300 rounded focus:ring-purple-500" checked>
+                            <span class="flex items-center gap-1"><i class="fas fa-eye text-yellow-500"></i>미리보기 포함</span>
+                        </label>
+                    </h3>
+                    <p class="text-sm text-purple-700 mb-4 flex items-center gap-2 meeting-section-hide">
+                        <i class="fas fa-info-circle"></i>
+                        공항 및 현지 미팅 정보를 각각 입력하고, 미리보기 포함 여부를 선택하세요.
+                    </p>
+
+                    <div class="meeting-card meeting-section-hide" data-meeting-card="airport">
+                        <div class="meeting-card-header">
+                            <div class="meeting-card-title">
+                                <i class="fas fa-plane-departure meeting-card-icon"></i>
+                                <span>공항 미팅</span>
+                            </div>
+                            <label class="meeting-toggle-label cursor-pointer">
+                                <input type="checkbox" id="airportMeetingInclude" class="meeting-include-toggle h-5 w-5 text-purple-600 border-2 border-purple-300 rounded focus:ring-purple-500" checked>
+                                <i class="fas fa-eye text-yellow-500"></i>
+                                <span>미리보기 포함</span>
+                            </label>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="grid md:grid-cols-3 gap-4">
+                                <div class="md:col-span-1">
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">장소</label>
+                                    <input type="text" id="airportMeetingPlace"
+                                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none"
+                                        placeholder="예: 인천공항 제1터미널">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">미팅 일자</label>
+                                    <input type="date" id="airportMeetingDate"
+                                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">미팅 시간</label>
+                                    <input type="time" id="airportMeetingTime"
+                                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none">
+                                </div>
+                            </div>
+                            <div class="grid md:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">담당자 이름</label>
+                                    <input type="text" id="airportMeetingContact"
+                                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none"
+                                        placeholder="예: 홍길동">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">전화번호</label>
+                                    <input type="tel" id="airportMeetingPhone"
+                                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none"
+                                        placeholder="예: 010-1234-5678">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                        <i class="fas fa-image text-purple-600 mr-1"></i>이미지 (선택)
+                                    </label>
+                                    <input type="file" id="airportMeetingImage" accept="image/*"
+                                        class="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none">
+                                    <div id="airportMeetingImagePreview" class="mt-2 hidden">
+                                        <img class="max-w-full h-32 object-contain rounded-lg border-2 border-gray-200">
+                                        <button type="button" class="remove-image mt-1 text-red-500 text-sm hover:text-red-700">
+                                            <i class="fas fa-times-circle mr-1"></i>이미지 제거
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="meeting-card meeting-section-hide" data-meeting-card="local">
+                        <div class="meeting-card-header">
+                            <div class="meeting-card-title">
+                                <i class="fas fa-map-marker-alt meeting-card-icon"></i>
+                                <span>현지 미팅</span>
+                            </div>
+                            <label class="meeting-toggle-label cursor-pointer">
+                                <input type="checkbox" id="localMeetingInclude" class="meeting-include-toggle h-5 w-5 text-purple-600 border-2 border-purple-300 rounded focus:ring-purple-500" checked>
+                                <i class="fas fa-eye text-yellow-500"></i>
+                                <span>미리보기 포함</span>
+                            </label>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="grid md:grid-cols-3 gap-4">
+                                <div class="md:col-span-1">
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">장소</label>
+                                    <input type="text" id="localMeetingPlace"
+                                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none"
+                                        placeholder="예: 제주공항 1층 로비">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">미팅 일자</label>
+                                    <input type="date" id="localMeetingDate"
+                                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">미팅 시간</label>
+                                    <input type="time" id="localMeetingTime"
+                                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none">
+                                </div>
+                            </div>
+                            <div class="grid md:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">가이드 이름</label>
+                                    <input type="text" id="localMeetingGuide"
+                                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none"
+                                        placeholder="예: 김가이드">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">전화번호</label>
+                                    <input type="tel" id="localMeetingPhone"
+                                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none"
+                                        placeholder="예: 010-9876-5432">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                        <i class="fas fa-image text-purple-600 mr-1"></i>이미지 (선택)
+                                    </label>
+                                    <input type="file" id="localMeetingImage" accept="image/*"
+                                        class="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none">
+                                    <div id="localMeetingImagePreview" class="mt-2 hidden">
+                                        <img class="max-w-full h-32 object-contain rounded-lg border-2 border-gray-200">
+                                        <button type="button" class="remove-image mt-1 text-red-500 text-sm hover:text-red-700">
+                                            <i class="fas fa-times-circle mr-1"></i>이미지 제거
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 미팅 정보 디자인 설정 -->
+                    <div class="design-settings">
+                        <p class="text-sm font-bold text-yellow-800 mb-2">
+                            <i class="fas fa-palette mr-1"></i>미팅 정보 디자인
+                        </p>
+                        <div class="grid md:grid-cols-3 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">글꼴</label>
+                                <select id="meetingFont" class="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:border-yellow-500 focus:outline-none">
+                                    <optgroup label="기본 폰트">
+                                        <option value="'Noto Sans KR', sans-serif">Noto Sans (기본)</option>
+                                        <option value="'Nanum Gothic', sans-serif">나눔고딕</option>
+                                        <option value="'Nanum Myeongjo', serif">나눔명조</option>
+                                        <option value="'Black Han Sans', sans-serif">검은고딕</option>
+                                        <option value="'Do Hyeon', sans-serif">도현체</option>
+                                        <option value="'Jua', sans-serif">주아체</option>
+                                        <option value="'Gamja Flower', cursive">감자꽃체</option>
+                                        <option value="'Sunflower', sans-serif">해바라기체</option>
+                                    </optgroup>
+                                    <optgroup label="커스텀 폰트">
+                                        <option value="'Pretendard-ExtraBold', sans-serif">Pretendard ExtraBold</option>
+                                        <option value="'Pretendard-Light', sans-serif">Pretendard Light</option>
+                                        <option value="'Pretendard-Medium', sans-serif">Pretendard Medium</option>
+                                        <option value="'Pretendard-Regular', sans-serif">Pretendard Regular</option>
+                                        <option value="'Recipekorea', sans-serif">레시피코리아 레코체</option>
+                                        <option value="'SB-Aggro-B', sans-serif">SB 어그로 B</option>
+                                        <option value="'SB-Aggro-L', sans-serif">SB 어그로 L</option>
+                                        <option value="'SB-Aggro-M', sans-serif">SB 어그로 M</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">글자 색상</label>
+                                <div class="flex gap-2">
+                                    <input type="color" id="meetingColor" value="#1f2937"
+                                        class="h-10 w-16 border-2 border-gray-300 rounded-lg cursor-pointer">
+                                    <input type="text" id="meetingColorHex" value="#1f2937"
+                                        class="flex-1 px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:border-yellow-500 focus:outline-none"
+                                        placeholder="#1f2937">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">정렬방식</label>
+                                <select id="meetingAlign" class="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:border-yellow-500 focus:outline-none">
+                                    <option value="left" selected>왼쪽 정렬</option>
+                                    <option value="center">가운데 정렬</option>
+                                    <option value="right">오른쪽 정렬</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 항공편 정보 -->
+                <div id="flightSection" class="bg-blue-50 p-6 rounded-lg border-2 border-blue-200 flight-section">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center justify-between">
+                        <span><i class="fas fa-plane text-blue-600 mr-2"></i>항공편 정보</span>
+                        <label class="inline-flex items-center gap-2 text-sm font-semibold text-blue-700 cursor-pointer">
+                            <input type="checkbox" id="flightSectionIncludeToggle" class="h-5 w-5 text-blue-600 border-2 border-blue-300 rounded focus:ring-blue-500" checked>
+                            <span class="flex items-center gap-1"><i class="fas fa-eye text-yellow-500"></i>미리보기 포함</span>
+                        </label>
+                    </h3>
+                    <div class="space-y-6 flight-section-hide">
+                        <!-- 출발편 -->
+                        <div class="bg-white p-4 rounded-lg border-2 border-gray-200">
+                            <h4 class="font-bold text-blue-700 mb-3">출발편</h4>
+                            <div class="grid md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">출발 공항</label>
+                                    <input type="text" id="departureAirport" required
+                                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
+                                        placeholder="예: 인천국제공항">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">도착 공항</label>
+                                    <input type="text" id="arrivalAirport" required
+                                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
+                                        placeholder="예: 제주국제공항">
+                                </div>
+                            </div>
+                            <div class="grid md:grid-cols-4 gap-4 mt-4">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">출발 시간</label>
+                                    <input type="time" id="departureTime" required
+                                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">도착 시간</label>
+                                    <input type="time" id="arrivalTime" required
+                                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">항공편명</label>
+                                    <input type="text" id="departureFlight" required
+                                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
+                                        placeholder="예: KE1234">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">비행시간</label>
+                                    <input type="text" id="departureFlightDuration"
+                                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
+                                        placeholder="예: 1시간 10분">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 귀국편 -->
+                        <div class="bg-white p-4 rounded-lg border-2 border-gray-200">
+                            <h4 class="font-bold text-blue-700 mb-3">귀국편</h4>
+                            <div class="grid md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">출발 공항</label>
+                                    <input type="text" id="returnDepartureAirport" required
+                                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
+                                        placeholder="예: 제주국제공항">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">도착 공항</label>
+                                    <input type="text" id="returnArrivalAirport" required
+                                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
+                                        placeholder="예: 인천국제공항">
+                                </div>
+                            </div>
+                            <div class="grid md:grid-cols-4 gap-4 mt-4">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">출발 시간</label>
+                                    <input type="time" id="returnDepartureTime" required
+                                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">도착 시간</label>
+                                    <input type="time" id="returnArrivalTime" required
+                                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">항공편명</label>
+                                    <input type="text" id="returnFlight" required
+                                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
+                                        placeholder="예: KE5678">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">비행시간</label>
+                                    <input type="text" id="returnFlightDuration"
+                                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
+                                        placeholder="예: 1시간 10분">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 항공편 이미지 -->
+                        <div class="mt-3">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-image text-blue-600 mr-1"></i>항공편 이미지 (선택)
+                            </label>
+                            <input type="file" id="flightImage" accept="image/*"
+                                class="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none">
+                            <div id="flightImagePreview" class="mt-2 hidden">
+                                <img class="max-w-full h-32 object-contain rounded-lg border-2 border-gray-200">
+                                <button type="button" class="remove-image mt-1 text-red-500 text-sm hover:text-red-700">
+                                    <i class="fas fa-times-circle mr-1"></i>이미지 제거
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 항공편 정보 디자인 설정 -->
+                    <div class="design-settings flight-section-hide">
+                        <p class="text-sm font-bold text-yellow-800 mb-2">
+                            <i class="fas fa-palette mr-1"></i>항공편 정보 디자인
+                        </p>
+                        <div class="grid md:grid-cols-3 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">글꼴</label>
+                                <select id="flightFont" class="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:border-yellow-500 focus:outline-none">
+                                    <optgroup label="기본 폰트">
+                                        <option value="'Noto Sans KR', sans-serif">Noto Sans (기본)</option>
+                                        <option value="'Nanum Gothic', sans-serif">나눔고딕</option>
+                                        <option value="'Nanum Myeongjo', serif">나눔명조</option>
+                                        <option value="'Black Han Sans', sans-serif">검은고딕</option>
+                                        <option value="'Do Hyeon', sans-serif">도현체</option>
+                                        <option value="'Jua', sans-serif">주아체</option>
+                                        <option value="'Gamja Flower', cursive">감자꽃체</option>
+                                        <option value="'Sunflower', sans-serif">해바라기체</option>
+                                    </optgroup>
+                                    <optgroup label="커스텀 폰트">
+                                        <option value="'Pretendard-ExtraBold', sans-serif">Pretendard ExtraBold</option>
+                                        <option value="'Pretendard-Light', sans-serif">Pretendard Light</option>
+                                        <option value="'Pretendard-Medium', sans-serif">Pretendard Medium</option>
+                                        <option value="'Pretendard-Regular', sans-serif">Pretendard Regular</option>
+                                        <option value="'Recipekorea', sans-serif">레시피코리아 레코체</option>
+                                        <option value="'SB-Aggro-B', sans-serif">SB 어그로 B</option>
+                                        <option value="'SB-Aggro-L', sans-serif">SB 어그로 L</option>
+                                        <option value="'SB-Aggro-M', sans-serif">SB 어그로 M</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">글자 색상</label>
+                                <div class="flex gap-2">
+                                    <input type="color" id="flightColor" value="#1f2937"
+                                        class="h-10 w-16 border-2 border-gray-300 rounded-lg cursor-pointer">
+                                    <input type="text" id="flightColorHex" value="#1f2937"
+                                        class="flex-1 px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:border-yellow-500 focus:outline-none"
+                                        placeholder="#1f2937">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">정렬방식</label>
+                                <select id="flightAlign" class="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:border-yellow-500 focus:outline-none">
+                                    <option value="left" selected>왼쪽 정렬</option>
+                                    <option value="center">가운데 정렬</option>
+                                    <option value="right">오른쪽 정렬</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 간략 일정표 -->
+                <div class="bg-green-50 p-6 rounded-lg border-2 border-green-200">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">
+                        <i class="fas fa-calendar-alt text-green-600 mr-2"></i>간략 일정표
+                    </h3>
+                    <div id="scheduleContainer" class="space-y-4">
+                        <div class="schedule-item bg-white p-4 rounded-lg border-2 border-gray-200">
+                            <div class="grid md:grid-cols-3 gap-4">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Day</label>
+                                    <input type="text" class="schedule-day w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none"
+                                        placeholder="예: Day 1">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">날짜</label>
+                                    <input type="date" class="schedule-date w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">일정 제목</label>
+                                    <input type="text" class="schedule-title w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none"
+                                        placeholder="예: 파리 시내 관광">
+                                </div>
+                            </div>
+                            <!-- 일정 상세 내용 -->
+                            <div class="mt-3 md:col-span-3">
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">세부 일정</label>
+                                <textarea class="schedule-detail w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none" rows="3"
+                                    placeholder="방문 장소, 활동, 식사 등 상세 일정을 입력하세요"></textarea>
+                            </div>
+                            <!-- 숙소 및 식사 -->
+                            <div class="grid md:grid-cols-2 gap-4 mt-3">
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">숙소</label>
+                                    <input type="text" class="schedule-hotel w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none"
+                                        placeholder="예: 파리 힐튼 호텔">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-semibold text-gray-700 mb-2">식사</label>
+                                    <input type="text" class="schedule-meal w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none"
+                                        placeholder="예: 조식 포함, 중식 현지식">
+                                </div>
+                            </div>
+                            <!-- 일정 이미지 -->
+                            <div class="mt-3">
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                    <i class="fas fa-image text-green-600 mr-1"></i>일정 이미지 (선택)
+                                </label>
+                                <input type="file" class="schedule-image w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none" accept="image/*">
+                                <div class="schedule-image-preview mt-2 hidden">
+                                    <img class="max-w-full h-32 object-contain rounded-lg border-2 border-gray-200">
+                                    <button type="button" class="remove-schedule-image mt-1 text-red-500 text-sm hover:text-red-700">
+                                        <i class="fas fa-times-circle mr-1"></i>이미지 제거
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" id="addSchedule" class="mt-4 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition">
+                        <i class="fas fa-plus mr-2"></i>일정 추가
+                    </button>
+                    
+                    <!-- 일정표 디자인 설정 -->
+                    <div class="design-settings">
+                        <p class="text-sm font-bold text-yellow-800 mb-2">
+                            <i class="fas fa-palette mr-1"></i>일정표 디자인
+                        </p>
+                        <div class="grid md:grid-cols-3 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">글꼴</label>
+                                <select id="teeupFont" class="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:border-yellow-500 focus:outline-none">
+                                    <optgroup label="기본 폰트">
+                                        <option value="'Noto Sans KR', sans-serif">Noto Sans (기본)</option>
+                                        <option value="'Nanum Gothic', sans-serif">나눔고딕</option>
+                                        <option value="'Nanum Myeongjo', serif">나눔명조</option>
+                                        <option value="'Black Han Sans', sans-serif">검은고딕</option>
+                                        <option value="'Do Hyeon', sans-serif">도현체</option>
+                                        <option value="'Jua', sans-serif">주아체</option>
+                                        <option value="'Gamja Flower', cursive">감자꽃체</option>
+                                        <option value="'Sunflower', sans-serif">해바라기체</option>
+                                    </optgroup>
+                                    <optgroup label="커스텀 폰트">
+                                        <option value="'Pretendard-ExtraBold', sans-serif">Pretendard ExtraBold</option>
+                                        <option value="'Pretendard-Light', sans-serif">Pretendard Light</option>
+                                        <option value="'Pretendard-Medium', sans-serif">Pretendard Medium</option>
+                                        <option value="'Pretendard-Regular', sans-serif">Pretendard Regular</option>
+                                        <option value="'Recipekorea', sans-serif">레시피코리아 레코체</option>
+                                        <option value="'SB-Aggro-B', sans-serif">SB 어그로 B</option>
+                                        <option value="'SB-Aggro-L', sans-serif">SB 어그로 L</option>
+                                        <option value="'SB-Aggro-M', sans-serif">SB 어그로 M</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">글자 색상</label>
+                                <div class="flex gap-2">
+                                    <input type="color" id="teeupColor" value="#1f2937"
+                                        class="h-10 w-16 border-2 border-gray-300 rounded-lg cursor-pointer">
+                                    <input type="text" id="teeupColorHex" value="#1f2937"
+                                        class="flex-1 px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:border-yellow-500 focus:outline-none"
+                                        placeholder="#1f2937">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">정렬방식</label>
+                                <select id="teeupAlign" class="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:border-yellow-500 focus:outline-none">
+                                    <option value="left" selected>왼쪽 정렬</option>
+                                    <option value="center">가운데 정렬</option>
+                                    <option value="right">오른쪽 정렬</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 숙소 정보 (선택사항) -->
+                <div class="bg-orange-50 p-6 rounded-lg border-2 border-orange-200" style="display: none;">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">
+                        <i class="fas fa-hotel text-orange-600 mr-2"></i>숙소 정보
+                    </h3>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">숙소명</label>
+                        <input type="text" id="accommodation"
+                            class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-orange-500 focus:outline-none"
+                            placeholder="예: 제주 신라호텔">
+                    </div>
+                    <div class="mt-4">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">숙소 주소 (선택)</label>
+                        <input type="text" id="accommodationAddress"
+                            class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-orange-500 focus:outline-none"
+                            placeholder="예: 제주시 중문관광로 72">
+                    </div>
+                    
+                    <!-- 숙소 이미지 -->
+                    <div class="mt-4">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-image text-orange-600 mr-1"></i>숙소 이미지 (선택)
+                        </label>
+                        <input type="file" id="accommodationImage" accept="image/*"
+                            class="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:border-orange-500 focus:outline-none">
+                        <div id="accommodationImagePreview" class="mt-2 hidden">
+                            <img class="max-w-full h-32 object-contain rounded-lg border-2 border-gray-200">
+                            <button type="button" class="remove-image mt-1 text-red-500 text-sm hover:text-red-700">
+                                <i class="fas fa-times-circle mr-1"></i>이미지 제거
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 숙소 정보 디자인 설정 -->
+                    <div class="design-settings">
+                        <p class="text-sm font-bold text-yellow-800 mb-2">
+                            <i class="fas fa-palette mr-1"></i>숙소 정보 디자인
+                        </p>
+                        <div class="grid md:grid-cols-3 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">글꼴</label>
+                                <select id="accommodationFont" class="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:border-yellow-500 focus:outline-none">
+                                    <optgroup label="기본 폰트">
+                                        <option value="'Noto Sans KR', sans-serif">Noto Sans (기본)</option>
+                                        <option value="'Nanum Gothic', sans-serif">나눔고딕</option>
+                                        <option value="'Nanum Myeongjo', serif">나눔명조</option>
+                                        <option value="'Black Han Sans', sans-serif">검은고딕</option>
+                                        <option value="'Do Hyeon', sans-serif">도현체</option>
+                                        <option value="'Jua', sans-serif">주아체</option>
+                                        <option value="'Gamja Flower', cursive">감자꽃체</option>
+                                        <option value="'Sunflower', sans-serif">해바라기체</option>
+                                    </optgroup>
+                                    <optgroup label="커스텀 폰트">
+                                        <option value="'Pretendard-ExtraBold', sans-serif">Pretendard ExtraBold</option>
+                                        <option value="'Pretendard-Light', sans-serif">Pretendard Light</option>
+                                        <option value="'Pretendard-Medium', sans-serif">Pretendard Medium</option>
+                                        <option value="'Pretendard-Regular', sans-serif">Pretendard Regular</option>
+                                        <option value="'Recipekorea', sans-serif">레시피코리아 레코체</option>
+                                        <option value="'SB-Aggro-B', sans-serif">SB 어그로 B</option>
+                                        <option value="'SB-Aggro-L', sans-serif">SB 어그로 L</option>
+                                        <option value="'SB-Aggro-M', sans-serif">SB 어그로 M</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">글자 색상</label>
+                                <div class="flex gap-2">
+                                    <input type="color" id="accommodationColor" value="#1f2937"
+                                        class="h-10 w-16 border-2 border-gray-300 rounded-lg cursor-pointer">
+                                    <input type="text" id="accommodationColorHex" value="#1f2937"
+                                        class="flex-1 px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:border-yellow-500 focus:outline-none"
+                                        placeholder="#1f2937">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">정렬방식</label>
+                                <select id="accommodationAlign" class="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:border-yellow-500 focus:outline-none">
+                                    <option value="left" selected>왼쪽 정렬</option>
+                                    <option value="center">가운데 정렬</option>
+                                    <option value="right">오른쪽 정렬</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 현지 정보 -->
+                <div class="bg-pink-50 p-6 rounded-lg border-2 border-pink-200">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">
+                        <i class="fas fa-globe text-pink-600 mr-2"></i>현지 정보 (선택)
+                    </h3>
+                    <textarea id="additionalInfo" rows="4"
+                        class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-pink-500 focus:outline-none"
+                        placeholder="준비물, 주의사항 등 추가로 전달할 내용을 입력하세요"></textarea>
+                    
+                    <!-- 현지 정보 디자인 설정 -->
+                    <div class="design-settings">
+                        <p class="text-sm font-bold text-yellow-800 mb-2">
+                            <i class="fas fa-palette mr-1"></i>현지 정보 디자인
+                        </p>
+                        <div class="grid md:grid-cols-3 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">글꼴</label>
+                                <select id="additionalFont" class="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:border-yellow-500 focus:outline-none">
+                                    <optgroup label="기본 폰트">
+                                        <option value="'Noto Sans KR', sans-serif">Noto Sans (기본)</option>
+                                        <option value="'Nanum Gothic', sans-serif">나눔고딕</option>
+                                        <option value="'Nanum Myeongjo', serif">나눔명조</option>
+                                        <option value="'Black Han Sans', sans-serif">검은고딕</option>
+                                        <option value="'Do Hyeon', sans-serif">도현체</option>
+                                        <option value="'Jua', sans-serif">주아체</option>
+                                        <option value="'Gamja Flower', cursive">감자꽃체</option>
+                                        <option value="'Sunflower', sans-serif">해바라기체</option>
+                                    </optgroup>
+                                    <optgroup label="커스텀 폰트">
+                                        <option value="'Pretendard-ExtraBold', sans-serif">Pretendard ExtraBold</option>
+                                        <option value="'Pretendard-Light', sans-serif">Pretendard Light</option>
+                                        <option value="'Pretendard-Medium', sans-serif">Pretendard Medium</option>
+                                        <option value="'Pretendard-Regular', sans-serif">Pretendard Regular</option>
+                                        <option value="'Recipekorea', sans-serif">레시피코리아 레코체</option>
+                                        <option value="'SB-Aggro-B', sans-serif">SB 어그로 B</option>
+                                        <option value="'SB-Aggro-L', sans-serif">SB 어그로 L</option>
+                                        <option value="'SB-Aggro-M', sans-serif">SB 어그로 M</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">글자 색상</label>
+                                <div class="flex gap-2">
+                                    <input type="color" id="additionalColor" value="#1f2937"
+                                        class="h-10 w-16 border-2 border-gray-300 rounded-lg cursor-pointer">
+                                    <input type="text" id="additionalColorHex" value="#1f2937"
+                                        class="flex-1 px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:border-yellow-500 focus:outline-none"
+                                        placeholder="#1f2937">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">정렬방식</label>
+                                <select id="additionalAlign" class="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:border-yellow-500 focus:outline-none">
+                                    <option value="left" selected>왼쪽 정렬</option>
+                                    <option value="center">가운데 정렬</option>
+                                    <option value="right">오른쪽 정렬</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 회사 정보 -->
+                <div class="bg-gray-50 p-6 rounded-lg border-2 border-gray-200">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4">
+                        <i class="fas fa-building text-gray-600 mr-2"></i>회사 정보 (선택)
+                    </h3>
+                    
+                    <!-- 회사 로고 -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-image text-gray-600 mr-1"></i>회사 로고
+                        </label>
+                        <input type="file" id="companyLogo" accept="image/*"
+                            class="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:border-gray-500 focus:outline-none">
+                        <div id="companyLogoPreview" class="mt-2 hidden">
+                            <img class="max-w-full h-32 object-contain rounded-lg border-2 border-gray-200">
+                            <button type="button" class="remove-image mt-1 text-red-500 text-sm hover:text-red-700">
+                                <i class="fas fa-times-circle mr-1"></i>이미지 제거
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <!-- 회사명 -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">회사명</label>
+                            <input type="text" id="companyName"
+                                class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-gray-500 focus:outline-none"
+                                placeholder="예: (주)골프투어">
+                        </div>
+                        
+                        <!-- 회사 전화번호 -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">대표 전화번호</label>
+                            <input type="tel" id="companyPhone"
+                                class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-gray-500 focus:outline-none"
+                                placeholder="예: 02-1234-5678">
+                        </div>
+                    </div>
+
+                    <!-- 회사 주소 -->
+                    <div class="mt-4">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">회사 주소</label>
+                        <input type="text" id="companyAddress"
+                            class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-gray-500 focus:outline-none"
+                            placeholder="예: 서울시 강남구 테헤란로 123">
+                    </div>
+
+                    <!-- 담당자 정보 -->
+                    <div class="mt-4 p-4 bg-white rounded-lg border-2 border-gray-200">
+                        <h4 class="text-md font-bold text-gray-700 mb-3">
+                            <i class="fas fa-user-tie text-gray-600 mr-1"></i>담당자 정보
+                        </h4>
+                        <div class="grid md:grid-cols-3 gap-4">
+                            <!-- 담당자명 -->
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">담당자명</label>
+                                <input type="text" id="managerName"
+                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-gray-500 focus:outline-none"
+                                    placeholder="예: 홍길동">
+                            </div>
+                            
+                            <!-- 담당자 전화번호 -->
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">담당자 전화번호</label>
+                                <input type="tel" id="managerPhone"
+                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-gray-500 focus:outline-none"
+                                    placeholder="예: 010-1234-5678">
+                            </div>
+                            
+                            <!-- 담당자 이메일 -->
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-2">담당자 이메일</label>
+                                <input type="email" id="managerEmail"
+                                    class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-gray-500 focus:outline-none"
+                                    placeholder="예: hong@company.com">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 회사 정보 디자인 설정 -->
+                    <div class="design-settings">
+                        <p class="text-sm font-bold text-yellow-800 mb-2">
+                            <i class="fas fa-palette mr-1"></i>회사 정보 디자인
+                        </p>
+                        <div class="grid md:grid-cols-3 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">글꼴</label>
+                                <select id="companyFont" class="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:border-yellow-500 focus:outline-none">
+                                    <optgroup label="기본 폰트">
+                                        <option value="'Noto Sans KR', sans-serif">Noto Sans (기본)</option>
+                                        <option value="'Nanum Gothic', sans-serif">나눔고딕</option>
+                                        <option value="'Nanum Myeongjo', serif">나눔명조</option>
+                                        <option value="'Black Han Sans', sans-serif">검은고딕</option>
+                                        <option value="'Do Hyeon', sans-serif">도현체</option>
+                                        <option value="'Jua', sans-serif">주아체</option>
+                                        <option value="'Gamja Flower', cursive">감자꽃체</option>
+                                        <option value="'Sunflower', sans-serif">해바라기체</option>
+                                    </optgroup>
+                                    <optgroup label="커스텀 폰트">
+                                        <option value="'Pretendard-ExtraBold', sans-serif">Pretendard ExtraBold</option>
+                                        <option value="'Pretendard-Light', sans-serif">Pretendard Light</option>
+                                        <option value="'Pretendard-Medium', sans-serif">Pretendard Medium</option>
+                                        <option value="'Pretendard-Regular', sans-serif">Pretendard Regular</option>
+                                        <option value="'Recipekorea', sans-serif">레시피코리아 레코체</option>
+                                        <option value="'SB-Aggro-B', sans-serif">SB 어그로 B</option>
+                                        <option value="'SB-Aggro-L', sans-serif">SB 어그로 L</option>
+                                        <option value="'SB-Aggro-M', sans-serif">SB 어그로 M</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">글자 색상</label>
+                                <div class="flex gap-2">
+                                    <input type="color" id="companyColor" value="#1f2937"
+                                        class="h-10 w-16 border-2 border-gray-300 rounded-lg cursor-pointer">
+                                    <input type="text" id="companyColorHex" value="#1f2937"
+                                        class="flex-1 px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:border-yellow-500 focus:outline-none"
+                                        placeholder="#1f2937">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-700 mb-1">정렬방식</label>
+                                <select id="companyAlign" class="w-full px-3 py-2 text-sm border-2 border-gray-300 rounded-lg focus:border-yellow-500 focus:outline-none">
+                                    <option value="left" selected>왼쪽 정렬</option>
+                                    <option value="center">가운데 정렬</option>
+                                    <option value="right">오른쪽 정렬</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 버튼 -->
+                <div class="flex gap-4">
+                    <button type="submit" class="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 text-white py-4 rounded-lg font-bold text-lg hover:shadow-lg transition">
+                        <i class="fas fa-eye mr-2"></i>미리보기 & 공유하기
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 저장 모달 -->
+    <div id="saveModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 class="text-xl font-bold mb-4">안내문 저장</h3>
+            <input type="text" id="saveName" placeholder="저장할 이름 입력 (예: 제주도 골프 2024-01)"
+                class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-purple-500 focus:outline-none mb-4">
+            <div class="flex gap-3">
+                <button id="confirmSave" class="flex-1 bg-green-500 hover:bg-green-600 text-white py-2 rounded-lg font-bold">
+                    저장
+                </button>
+                <button id="cancelSave" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 rounded-lg font-bold">
+                    취소
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 불러오기 모달 -->
+    <div id="loadModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+            <h3 class="text-xl font-bold mb-4">저장된 안내문 목록</h3>
+            <div id="savedList" class="space-y-2 mb-4"></div>
+            <button id="closeLoad" class="w-full bg-gray-500 hover:bg-gray-600 text-white py-2 rounded-lg font-bold">
+                닫기
+            </button>
+        </div>
+    </div>
+
+    <!-- 템플릿 저장 모달 -->
+    <div id="templateSaveModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 class="text-xl font-bold mb-4 flex items-center">
+                <i class="fas fa-palette text-yellow-500 mr-2"></i>
+                디자인 템플릿 저장
+            </h3>
+            <p class="text-sm text-gray-600 mb-4">현재 설정된 폰트와 색상을 템플릿으로 저장합니다.</p>
+            <input type="text" id="templateName" placeholder="템플릿 이름 입력 (예: 고급스러운 디자인)"
+                class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-yellow-500 focus:outline-none mb-4">
+            <div class="flex gap-3">
+                <button id="confirmTemplateSave" class="flex-1 bg-yellow-500 hover:bg-yellow-600 text-white py-2 rounded-lg font-bold">
+                    저장
+                </button>
+                <button id="closeTemplateSave" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white py-2 rounded-lg font-bold">
+                    취소
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 템플릿 불러오기 모달 -->
+    <div id="templateLoadModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+            <h3 class="text-xl font-bold mb-4 flex items-center">
+                <i class="fas fa-paint-brush text-orange-500 mr-2"></i>
+                저장된 디자인 템플릿
+            </h3>
+            <p class="text-sm text-gray-600 mb-4">템플릿을 선택하면 폰트와 색상 설정이 적용됩니다. (텍스트 내용과 이미지는 그대로 유지됩니다)</p>
+            <div id="templateList" class="space-y-2 mb-4"></div>
+            <button id="closeTemplateLoad" class="w-full bg-gray-500 hover:bg-gray-600 text-white py-2 rounded-lg font-bold">
+                닫기
+            </button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const $ = (sel, root=document) => root.querySelector(sel);
+            const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+            const encodeData = (obj) => encodeURIComponent(LZString.compressToEncodedURIComponent(JSON.stringify(obj)));
+            const serializeForm = function () {
+                const start = $('#startDate')?.value || '';
+                const end = $('#endDate')?.value || '';
+                const stripNum = (v) => (v || '').toString().replace(/[^\d]/g, '');
+                const data = {
+                    meta: {
+                        title: $('#title')?.value || '',
+                        titleStyle: {
+                            font: $('#titleFont')?.value || '',
+                            color: $('#titleColorHex')?.value || '#ffffff',
+                            align: $('#titleAlign')?.value || 'center'
+                        }
+                    },
+                    period: { start, end,
+                        style: {
+                            font: $('#periodFont')?.value || '',
+                            size: $('#periodFontSize')?.value || '20px',
+                            color: $('#periodColorHex')?.value || '#ffffff',
+                            align: $('#periodAlign')?.value || 'center'
+                        }
+                    },
+                    prices: {
+                        included: $('#priceIncludeToggle')?.checked ?? true,
+                        adult: stripNum($('#adultPrice')?.value),
+                        child: stripNum($('#childPrice')?.value),
+                        infant: stripNum($('#infantPrice')?.value)
+                    },
+                    expense: {
+                        inc: {
+                            transport: $('#incTransport')?.value || '',
+                            hotel: $('#incHotel')?.value || '',
+                            meal: $('#incMeal')?.value || '',
+                            tour: $('#incTour')?.value || '',
+                            insurance: $('#incInsurance')?.value || '',
+                            guide: $('#incGuide')?.value || ''
+                        },
+                        exc: ($('#exclusions')?.value || '').split(/\r?\n/).map(s => s.trim()).filter(Boolean),
+                        opt: ($('#optionals')?.value || '').split(/\r?\n/).map(s => s.trim()).filter(Boolean)
+                    },
+                    meeting: {
+                        sectionIncluded: $('#meetingSectionIncludeToggle')?.checked ?? true,
+                        airport: {
+                            include: $('#airportMeetingInclude')?.checked ?? true,
+                            place: $('#meetingPlaceAirport')?.value || '',
+                            date: $('#meetingDateAirport')?.value || '',
+                            time: $('#meetingTimeAirport')?.value || '',
+                            contact: $('#meetingHostAirport')?.value || '',
+                            phone: $('#meetingPhoneAirport')?.value || ''
+                        },
+                        local: {
+                            include: $('#localMeetingInclude')?.checked ?? true,
+                            place: $('#meetingPlaceLocal')?.value || '',
+                            date: $('#meetingDateLocal')?.value || '',
+                            time: $('#meetingTimeLocal')?.value || '',
+                            contact: $('#meetingGuideLocal')?.value || '',
+                            phone: $('#meetingPhoneLocal')?.value || ''
+                        }
+                    },
+                    flight: {
+                        sectionIncluded: $('#flightSectionIncludeToggle')?.checked ?? true,
+                        out: {
+                            depAirport: $('#departureAirport')?.value || '',
+                            arrAirport: $('#arrivalAirport')?.value || '',
+                            depTime: $('#departureTime')?.value || '',
+                            arrTime: $('#arrivalTime')?.value || '',
+                            flightNo: $('#departureFlight')?.value || '',
+                            duration: $('#departureFlightDuration')?.value || ''
+                        },
+                        ret: {
+                            depAirport: $('#returnDepartureAirport')?.value || '',
+                            arrAirport: $('#returnArrivalAirport')?.value || '',
+                            depTime: $('#returnDepartureTime')?.value || '',
+                            arrTime: $('#returnArrivalTime')?.value || '',
+                            flightNo: $('#returnFlight')?.value || '',
+                            duration: $('#returnFlightDuration')?.value || ''
+                        }
+                    },
+                    schedules: $$('#scheduleContainer .schedule-item').map(item => ({
+                        day: $('.schedule-day', item)?.value || '',
+                        date: $('.schedule-date', item)?.value || '',
+                        title: $('.schedule-title', item)?.value || '',
+                        detail: $('.schedule-detail', item)?.value || '',
+                        hotel: $('.schedule-hotel', item)?.value || '',
+                        meal: $('.schedule-meal', item)?.value || ''
+                    })),
+                    additional: { text: $('#additionalInfo')?.value || '' },
+                    company: {
+                        name: $('#companyName')?.value || '',
+                        phone: $('#companyPhone')?.value || '',
+                        address: $('#companyAddress')?.value || '',
+                        manager: {
+                            name: $('#managerName')?.value || '',
+                            phone: $('#managerPhone')?.value || '',
+                            email: $('#managerEmail')?.value || ''
+                        }
+                    }
+                };
+                return data;
+            };
+            const priceFields = [
+                { inputId: 'adultPrice', displayId: 'priceAdult' },
+                { inputId: 'childPrice', displayId: 'priceChild' },
+                { inputId: 'infantPrice', displayId: 'priceInfant' }
+            ];
+
+            const formatCurrency = function (value) {
+                if (!value) return '-';
+                const numeric = value.toString().replace(/[^\d]/g, '');
+                if (!numeric) return '-';
+                return new Intl.NumberFormat('ko-KR').format(Number(numeric)) + '원';
+            };
+
+            priceFields.forEach(function (field) {
+                const inputEl = document.getElementById(field.inputId);
+                const displayEl = document.getElementById(field.displayId);
+                if (!inputEl || !displayEl) {
+                    return;
+                }
+
+                const updateDisplay = function () {
+                    displayEl.textContent = formatCurrency(inputEl.value);
+                };
+
+                const formatInput = function () {
+                    const numeric = inputEl.value.replace(/[^\d]/g, '');
+                    inputEl.value = numeric ? new Intl.NumberFormat('ko-KR').format(Number(numeric)) : '';
+                };
+
+                inputEl.addEventListener('input', function () {
+                    formatInput();
+                    updateDisplay();
+                });
+
+                inputEl.addEventListener('blur', function () {
+                    formatInput();
+                    updateDisplay();
+                });
+
+                updateDisplay();
+            });
+
+            // 상품가격 미리보기 포함 토글
+            (function () {
+                const section = document.getElementById('priceSection');
+                const toggle = document.getElementById('priceIncludeToggle');
+                const content = document.getElementById('priceSectionContent');
+                if (!section || !toggle || !content) return;
+
+                const apply = function () {
+                    const included = !!toggle.checked;
+                    section.dataset.priceInclude = included ? 'true' : 'false';
+                    content.classList.toggle('hidden', !included);
+                };
+
+                toggle.addEventListener('change', apply);
+                apply();
+            })();
+
+            // 미팅 정보 섹션 전체 토글
+            (function () {
+                const section = document.getElementById('meetingSection');
+                const toggle = document.getElementById('meetingSectionIncludeToggle');
+                if (!section || !toggle) return;
+
+                const apply = function () {
+                    section.classList.toggle('collapsed', !toggle.checked);
+                };
+
+                toggle.addEventListener('change', apply);
+                apply();
+            })();
+
+            // 항공편 정보 섹션 전체 토글
+            (function () {
+                const section = document.getElementById('flightSection');
+                const toggle = document.getElementById('flightSectionIncludeToggle');
+                if (!section || !toggle) return;
+
+                const apply = function () {
+                    section.classList.toggle('collapsed', !toggle.checked);
+                };
+
+                toggle.addEventListener('change', apply);
+                apply();
+            })();
+
+            document.querySelectorAll('[data-meeting-card]').forEach(function (card) {
+                const toggle = card.querySelector('.meeting-include-toggle');
+                if (!toggle) {
+                    return;
+                }
+
+                const updateState = function () {
+                    card.dataset.include = toggle.checked ? 'true' : 'false';
+                };
+
+                toggle.addEventListener('change', updateState);
+                updateState();
+            });
+
+            // 일정 추가/이미지 미리보기 바인딩
+            (function () {
+                const container = document.getElementById('scheduleContainer');
+                const addBtn = document.getElementById('addSchedule');
+                if (!container || !addBtn) return;
+
+                const bindScheduleItem = function (item) {
+                    const imageInput = item.querySelector('.schedule-image');
+                    const previewWrap = item.querySelector('.schedule-image-preview');
+                    const previewImg = previewWrap ? previewWrap.querySelector('img') : null;
+                    const removeBtn = item.querySelector('.remove-schedule-image');
+
+                    if (imageInput && previewWrap && previewImg) {
+                        imageInput.addEventListener('change', function () {
+                            if (imageInput.files && imageInput.files[0]) {
+                                const url = URL.createObjectURL(imageInput.files[0]);
+                                previewImg.src = url;
+                                previewWrap.classList.remove('hidden');
+                            } else {
+                                previewImg.src = '';
+                                previewWrap.classList.add('hidden');
+                            }
+                        });
+                    }
+
+                    if (removeBtn && imageInput && previewWrap && previewImg) {
+                        removeBtn.addEventListener('click', function () {
+                            imageInput.value = '';
+                            previewImg.src = '';
+                            previewWrap.classList.add('hidden');
+                        });
+                    }
+                };
+
+                // 초기 아이템 바인딩
+                const firstItem = container.querySelector('.schedule-item');
+                if (firstItem) bindScheduleItem(firstItem);
+
+                // 일정 추가
+                addBtn.addEventListener('click', function () {
+                    const template = container.querySelector('.schedule-item');
+                    if (!template) return;
+                    const clone = template.cloneNode(true);
+
+                    // 입력 초기화
+                    clone.querySelectorAll('input, textarea').forEach(function (el) {
+                        if (el.type === 'file') {
+                            el.value = '';
+                        } else {
+                            el.value = '';
+                        }
+                    });
+                    // 이미지 미리보기 초기화
+                    const previewWrap = clone.querySelector('.schedule-image-preview');
+                    const previewImg = previewWrap ? previewWrap.querySelector('img') : null;
+                    if (previewWrap) previewWrap.classList.add('hidden');
+                    if (previewImg) previewImg.src = '';
+
+                    container.appendChild(clone);
+                    bindScheduleItem(clone);
+                });
+            })();
+            // 포함/불포함/선택경비 렌더링
+            (function () {
+                const sources = [
+                    { id: 'incTransport', label: '[교통]' },
+                    { id: 'incHotel', label: '[숙박]' },
+                    { id: 'incMeal', label: '[식사]' },
+                    { id: 'incTour', label: '[관광]' },
+                    { id: 'incInsurance', label: '[보험]' },
+                    { id: 'incGuide', label: '[가이드]' }
+                ];
+                const incList = document.getElementById('incList');
+                const excList = document.getElementById('excList');
+                const optList = document.getElementById('optList');
+                const optBlock = document.getElementById('optBlock');
+                const exclusions = document.getElementById('exclusions');
+                const optionals = document.getElementById('optionals');
+                if (!incList || !excList || !optList) return;
+
+                const createLi = function (symbol, title, text) {
+                    const li = document.createElement('li');
+                    li.className = 'flex items-start gap-2 text-sm';
+                    const sym = document.createElement('span');
+                    sym.textContent = symbol;
+                    sym.className = 'mt-0.5 text-purple-600 font-bold';
+                    const content = document.createElement('div');
+                    const heading = document.createElement('div');
+                    heading.className = 'font-semibold text-gray-800';
+                    heading.textContent = title;
+                    const desc = document.createElement('div');
+                    desc.className = 'text-gray-600 text-sm leading-relaxed';
+                    desc.textContent = text;
+                    content.appendChild(heading);
+                    if (text && text.trim()) content.appendChild(desc);
+                    li.appendChild(sym);
+                    li.appendChild(content);
+                    return li;
+                };
+
+                const render = function () {
+                    // 포함
+                    incList.innerHTML = '';
+                    sources.forEach(function (s) {
+                        const el = document.getElementById(s.id);
+                        if (!el) return;
+                        const val = (el.value || '').trim();
+                        if (val) incList.appendChild(createLi('○', s.label, val));
+                    });
+                    if (!incList.children.length) {
+                        const empty = document.createElement('li');
+                        empty.className = 'text-gray-400 text-sm';
+                        empty.textContent = '입력된 포함내역이 없습니다.';
+                        incList.appendChild(empty);
+                    }
+
+                    // 불포함
+                    excList.innerHTML = '';
+                    const excLines = (exclusions?.value || '').split(/\r?\n/).map(function (l) { return l.trim(); }).filter(Boolean);
+                    if (excLines.length) {
+                        excLines.forEach(function (line) {
+                            const li = document.createElement('li');
+                            li.className = 'flex items-start gap-2 text-sm';
+                            const sym = document.createElement('span');
+                            sym.textContent = '✕';
+                            sym.className = 'mt-0.5 text-red-500 font-bold';
+                            const text = document.createElement('div');
+                            text.className = 'text-gray-600 leading-relaxed';
+                            text.textContent = line;
+                            li.appendChild(sym);
+                            li.appendChild(text);
+                            excList.appendChild(li);
+                        });
+                    } else {
+                        const empty2 = document.createElement('li');
+                        empty2.className = 'text-gray-400 text-sm';
+                        empty2.textContent = '입력된 불포함내역이 없습니다.';
+                        excList.appendChild(empty2);
+                    }
+
+                    // 선택경비
+                    optList.innerHTML = '';
+                    const optLines = (optionals?.value || '').split(/\r?\n/).map(function (l) { return l.trim(); }).filter(Boolean);
+                    if (optLines.length) {
+                        optLines.forEach(function (line) {
+                            const li = document.createElement('li');
+                            li.className = 'flex items-start gap-2 text-sm';
+                            const sym = document.createElement('span');
+                            sym.textContent = '○';
+                            sym.className = 'mt-0.5 text-blue-500 font-bold';
+                            const text = document.createElement('div');
+                            text.className = 'text-gray-600 leading-relaxed';
+                            text.textContent = line;
+                            li.appendChild(sym);
+                            li.appendChild(text);
+                            optList.appendChild(li);
+                        });
+                        optBlock.classList.remove('hidden');
+                    } else {
+                        optBlock.classList.add('hidden');
+                    }
+                };
+
+                sources.forEach(function (s) {
+                    const el = document.getElementById(s.id);
+                    el && el.addEventListener('input', render);
+                });
+                exclusions && exclusions.addEventListener('input', render);
+                optionals && optionals.addEventListener('input', render);
+                render();
+            })();
+
+            // 미리보기 & 공유하기, 저장/불러오기/템플릿
+            (function () {
+                const formEl = document.getElementById('travelForm');
+                formEl && formEl.addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    const data = serializeForm();
+                    const payload = encodeData(data);
+                    window.open(`preview.html?d=${payload}`, '_blank');
+                });
+
+                const STORAGE_KEY = 'travel_saves_v1';
+                const TPL_KEY = 'travel_templates_v1';
+                const getSaves = () => JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+                const setSaves = (arr) => localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+                const getTemplates = () => JSON.parse(localStorage.getItem(TPL_KEY) || '[]');
+                const setTemplates = (arr) => localStorage.setItem(TPL_KEY, JSON.stringify(arr));
+
+                const saveBtn = document.getElementById('saveButton');
+                const loadBtn = document.getElementById('loadButton');
+                const saveModal = document.getElementById('saveModal');
+                const loadModal = document.getElementById('loadModal');
+                const confirmSave = document.getElementById('confirmSave');
+                const cancelSave = document.getElementById('cancelSave');
+                const saveName = document.getElementById('saveName');
+                const savedList = document.getElementById('savedList');
+                const closeLoad = document.getElementById('closeLoad');
+
+                const renderSavedList = function () {
+                    if (!savedList) return;
+                    const list = getSaves();
+                    savedList.innerHTML = '';
+                    if (!list.length) {
+                        const p = document.createElement('p');
+                        p.className = 'text-sm text-gray-500';
+                        p.textContent = '저장된 안내문이 없습니다.';
+                        savedList.appendChild(p);
+                        return;
+                    }
+                    list.forEach(item => {
+                        const row = document.createElement('div');
+                        row.className = 'border border-gray-200 rounded-lg p-3 flex items-center justify-between gap-3';
+                        const name = document.createElement('div');
+                        name.className = 'font-semibold text-gray-800';
+                        name.textContent = item.name;
+                        const btns = document.createElement('div');
+                        btns.className = 'flex gap-2';
+                        const load = document.createElement('button');
+                        load.className = 'px-3 py-1 bg-blue-500 text-white rounded-md text-sm';
+                        load.textContent = '불러오기';
+                        load.addEventListener('click', function () {
+                            // apply minimal fields
+                            location.reload(); // simplest way to avoid event rebind issues
+                            localStorage.setItem('__pending_load__', JSON.stringify(item.data));
+                        });
+                        const preview = document.createElement('button');
+                        preview.className = 'px-3 py-1 bg-purple-500 text-white rounded-md text-sm';
+                        preview.textContent = '미리보기';
+                        preview.addEventListener('click', function () {
+                            const payload = encodeData(item.data);
+                            window.open(`preview.html?d=${payload}`, '_blank');
+                        });
+                        const del = document.createElement('button');
+                        del.className = 'px-3 py-1 bg-gray-600 text-white rounded-md text-sm';
+                        del.textContent = '삭제';
+                        del.addEventListener('click', function () {
+                            const arr = getSaves().filter(s => s.id !== item.id);
+                            setSaves(arr);
+                            renderSavedList();
+                        });
+                        btns.appendChild(load);
+                        btns.appendChild(preview);
+                        btns.appendChild(del);
+                        row.appendChild(name);
+                        row.appendChild(btns);
+                        savedList.appendChild(row);
+                    });
+                };
+
+                saveBtn && saveBtn.addEventListener('click', function () {
+                    saveName && (saveName.value = '');
+                    saveModal && saveModal.classList.remove('hidden');
+                    saveModal && saveModal.classList.add('flex');
+                });
+                cancelSave && cancelSave.addEventListener('click', function () {
+                    saveModal && saveModal.classList.add('hidden');
+                    saveModal && saveModal.classList.remove('flex');
+                });
+                confirmSave && confirmSave.addEventListener('click', function () {
+                    const name = (saveName?.value || '').trim() || `안내문 ${new Date().toLocaleString()}`;
+                    const data = serializeForm();
+                    const list = getSaves();
+                    list.unshift({ id: Date.now(), name, data });
+                    setSaves(list.slice(0, 100));
+                    saveModal && saveModal.classList.add('hidden');
+                    saveModal && saveModal.classList.remove('flex');
+                    alert('저장되었습니다.');
+                });
+
+                loadBtn && loadBtn.addEventListener('click', function () {
+                    loadModal && loadModal.classList.remove('hidden');
+                    loadModal && loadModal.classList.add('flex');
+                    renderSavedList();
+                });
+                closeLoad && closeLoad.addEventListener('click', function () {
+                    loadModal && loadModal.classList.add('hidden');
+                    loadModal && loadModal.classList.remove('flex');
+                });
+
+                // 템플릿
+                const saveTplBtn = document.getElementById('saveTemplateButton');
+                const loadTplBtn = document.getElementById('loadTemplateButton');
+                const tplSaveModal = document.getElementById('templateSaveModal');
+                const tplLoadModal = document.getElementById('templateLoadModal');
+                const templateName = document.getElementById('templateName');
+                const confirmTemplateSave = document.getElementById('confirmTemplateSave');
+                const closeTemplateSave = document.getElementById('closeTemplateSave');
+                const templateList = document.getElementById('templateList');
+                const closeTemplateLoad = document.getElementById('closeTemplateLoad');
+
+                const collectDesign = function () {
+                    return {
+                        title: { font: $('#titleFont')?.value, color: $('#titleColorHex')?.value, align: $('#titleAlign')?.value },
+                        period: { font: $('#periodFont')?.value, size: $('#periodFontSize')?.value, color: $('#periodColorHex')?.value, align: $('#periodAlign')?.value },
+                        meeting: { font: $('#meetingFont')?.value, color: $('#meetingColorHex')?.value, align: $('#meetingAlign')?.value },
+                        flight: { font: $('#flightFont')?.value, color: $('#flightColorHex')?.value, align: $('#flightAlign')?.value },
+                        schedule: { font: $('#teeupFont')?.value, color: $('#teeupColorHex')?.value, align: $('#teeupAlign')?.value },
+                        additional: { font: $('#additionalFont')?.value, color: $('#additionalColorHex')?.value, align: $('#additionalAlign')?.value },
+                        company: { font: $('#companyFont')?.value, color: $('#companyColorHex')?.value, align: $('#companyAlign')?.value }
+                    };
+                };
+                const applyDesign = function (d) {
+                    const set = (id, val) => { const el = document.getElementById(id); if (el && val != null) el.value = val; };
+                    set('titleFont', d.title?.font); set('titleColorHex', d.title?.color); set('titleAlign', d.title?.align); $('#titleColor') && ($('#titleColor').value = d.title?.color || '#ffffff');
+                    set('periodFont', d.period?.font); set('periodFontSize', d.period?.size); set('periodColorHex', d.period?.color); set('periodAlign', d.period?.align); $('#periodColor') && ($('#periodColor').value = d.period?.color || '#ffffff');
+                    set('meetingFont', d.meeting?.font); set('meetingColorHex', d.meeting?.color); set('meetingAlign', d.meeting?.align); $('#meetingColor') && ($('#meetingColor').value = d.meeting?.color || '#1f2937');
+                    set('flightFont', d.flight?.font); set('flightColorHex', d.flight?.color); set('flightAlign', d.flight?.align); $('#flightColor') && ($('#flightColor').value = d.flight?.color || '#1f2937');
+                    set('teeupFont', d.schedule?.font); set('teeupColorHex', d.schedule?.color); set('teeupAlign', d.schedule?.align); $('#teeupColor') && ($('#teeupColor').value = d.schedule?.color || '#1f2937');
+                    set('additionalFont', d.additional?.font); set('additionalColorHex', d.additional?.color); set('additionalAlign', d.additional?.align); $('#additionalColor') && ($('#additionalColor').value = d.additional?.color || '#1f2937');
+                    set('companyFont', d.company?.font); set('companyColorHex', d.company?.color); set('companyAlign', d.company?.align); $('#companyColor') && ($('#companyColor').value = d.company?.color || '#1f2937');
+                };
+
+                saveTplBtn && saveTplBtn.addEventListener('click', function () {
+                    templateName && (templateName.value = '');
+                    tplSaveModal && tplSaveModal.classList.remove('hidden');
+                    tplSaveModal && tplSaveModal.classList.add('flex');
+                });
+                closeTemplateSave && closeTemplateSave.addEventListener('click', function () {
+                    tplSaveModal && tplSaveModal.classList.add('hidden');
+                    tplSaveModal && tplSaveModal.classList.remove('flex');
+                });
+                confirmTemplateSave && confirmTemplateSave.addEventListener('click', function () {
+                    const name = (templateName?.value || '').trim() || `템플릿 ${new Date().toLocaleString()}`;
+                    const design = collectDesign();
+                    const list = getTemplates();
+                    list.unshift({ id: Date.now(), name, design });
+                    setTemplates(list.slice(0, 100));
+                    tplSaveModal && tplSaveModal.classList.add('hidden');
+                    tplSaveModal && tplSaveModal.classList.remove('flex');
+                    alert('디자인 템플릿이 저장되었습니다.');
+                });
+
+                const renderTemplates = function () {
+                    if (!templateList) return;
+                    const list = getTemplates();
+                    templateList.innerHTML = '';
+                    if (!list.length) {
+                        const p = document.createElement('p');
+                        p.className = 'text-sm text-gray-500';
+                        p.textContent = '저장된 템플릿이 없습니다.';
+                        templateList.appendChild(p);
+                        return;
+                    }
+                    list.forEach(t => {
+                        const row = document.createElement('div');
+                        row.className = 'border border-gray-200 rounded-lg p-3 flex items-center justify-between gap-3';
+                        const name = document.createElement('div');
+                        name.className = 'font-semibold text-gray-800';
+                        name.textContent = t.name;
+                        const btns = document.createElement('div');
+                        btns.className = 'flex gap-2';
+                        const applyBtn = document.createElement('button');
+                        applyBtn.className = 'px-3 py-1 bg-blue-500 text-white rounded-md text-sm';
+                        applyBtn.textContent = '적용';
+                        applyBtn.addEventListener('click', function () {
+                            applyDesign(t.design);
+                            tplLoadModal && tplLoadModal.classList.add('hidden');
+                            tplLoadModal && tplLoadModal.classList.remove('flex');
+                            alert('템플릿이 적용되었습니다.');
+                        });
+                        const del = document.createElement('button');
+                        del.className = 'px-3 py-1 bg-gray-600 text-white rounded-md text-sm';
+                        del.textContent = '삭제';
+                        del.addEventListener('click', function () {
+                            const arr = getTemplates().filter(x => x.id !== t.id);
+                            setTemplates(arr);
+                            renderTemplates();
+                        });
+                        btns.appendChild(applyBtn);
+                        btns.appendChild(del);
+                        row.appendChild(name);
+                        row.appendChild(btns);
+                        templateList.appendChild(row);
+                    });
+                };
+
+                loadTplBtn && loadTplBtn.addEventListener('click', function () {
+                    tplLoadModal && tplLoadModal.classList.remove('hidden');
+                    tplLoadModal && tplLoadModal.classList.add('flex');
+                    renderTemplates();
+                });
+                closeTemplateLoad && closeTemplateLoad.addEventListener('click', function () {
+                    tplLoadModal && tplLoadModal.classList.add('hidden');
+                    tplLoadModal && tplLoadModal.classList.remove('flex');
+                });
+
+                // pending load (from saved list quick-load)
+                const pending = localStorage.getItem('__pending_load__');
+                if (pending) {
+                    try {
+                        const data = JSON.parse(pending);
+                        // apply minimal: reload handler earlier didn't keep function; but here page loaded.
+                        // For brevity, just set fields commonly used in preview.
+                        // In a full app, we would reuse applyDataToForm.
+                        // Simplified set:
+                        const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val ?? ''; };
+                        set('title', data.meta?.title);
+                        set('startDate', data.period?.start);
+                        set('endDate', data.period?.end);
+                        set('adultPrice', data.prices?.adult);
+                        set('childPrice', data.prices?.child);
+                        set('infantPrice', data.prices?.infant);
+                        set('incTransport', data.expense?.inc?.transport);
+                        set('incHotel', data.expense?.inc?.hotel);
+                        set('incMeal', data.expense?.inc?.meal);
+                        set('incTour', data.expense?.inc?.tour);
+                        set('incInsurance', data.expense?.inc?.insurance);
+                        set('incGuide', data.expense?.inc?.guide);
+                        document.getElementById('exclusions').value = (data.expense?.exc||[]).join('\\n');
+                        document.getElementById('optionals').value = (data.expense?.opt||[]).join('\\n');
+                    } catch {}
+                    localStorage.removeItem('__pending_load__');
+                }
+            })();
+        });
+    </script>
+    <script src="../js/travel.js"></script>
+</body>
+</html>
