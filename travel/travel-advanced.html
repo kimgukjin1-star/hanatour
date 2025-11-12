@@ -13,6 +13,120 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
         }
+        /* 레이아웃: 좌측 고정 사이드바 + 메인 컨텐츠 */
+        .main-content {
+            margin-left: 280px;
+        }
+        .sidebar {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 240px;
+            height: calc(100vh - 40px);
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            padding: 30px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            border: 1px solid rgba(102, 126, 234, 0.15);
+            z-index: 1200;
+        }
+        .sidebar-header {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .sidebar-logo {
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: #667eea;
+        }
+        .sidebar-description {
+            font-size: 0.9rem;
+            color: #6b7280;
+        }
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .sidebar-nav a {
+            display: block;
+            padding: 10px 14px;
+            border-radius: 10px;
+            text-decoration: none;
+            color: #374151;
+            font-weight: 500;
+            background: rgba(102, 126, 234, 0.08);
+            transition: all 0.3s ease;
+        }
+        .sidebar-nav a:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            transform: translateX(4px);
+        }
+        .sidebar-support {
+            margin-top: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            font-size: 0.85rem;
+            color: #6b7280;
+        }
+        .sidebar-mail {
+            color: #4f46e5;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .sidebar-mail:hover {
+            text-decoration: underline;
+        }
+        /* 반응형: 태블릿 이하에서 사이드바 상단 배치 */
+        @media (max-width: 1024px) {
+            .sidebar {
+                position: static;
+                width: 100%;
+                height: auto;
+                flex-direction: row;
+                flex-wrap: wrap;
+                align-items: center;
+                gap: 16px;
+                margin-bottom: 20px;
+            }
+            .sidebar-header {
+                flex: 1 1 100%;
+                text-align: center;
+            }
+            .sidebar-nav {
+                flex: 1 1 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 10px;
+            }
+            .sidebar-nav a {
+                flex: 1 1 calc(50% - 10px);
+                text-align: center;
+            }
+            .sidebar-support {
+                flex: 1 1 100%;
+                align-items: center;
+                text-align: center;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+        }
+        @media (max-width: 640px) {
+            .sidebar {
+                padding: 20px;
+            }
+            .sidebar-nav a {
+                flex: 1 1 100%;
+            }
+        }
         /* 스타일: 우측 하단 떠다니는 미리보기/공유 버튼 */
         .fab-preview {
             position: fixed; /* 스크롤 고정 */
@@ -124,10 +238,34 @@
     </style>
 </head>
 <body class="p-4 md:p-8">
+    <!-- 고정 사이드 메뉴: 주요 입력 섹션 바로가기 -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-logo">Travel Builder</div>
+            <p class="sidebar-description">필수 입력 섹션 빠른 이동</p>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="#header-section">🎯 시작 안내</a>
+            <a href="#priceSection">💰 상품 가격</a>
+            <a href="#meetingSection">🤝 미팅 정보</a>
+            <a href="#flightSection">✈️ 항공편 정보</a>
+            <a href="#scheduleContainer">🗓️ 간략 일정</a>
+            <a href="#additionalSection">🌍 현지 정보</a>
+            <a href="#companySection">🏢 회사 정보</a>
+            <a href="../excel/excel-import.html" target="_blank">📊 엑셀 업로드</a>
+            <a href="#top">🔝 맨 위로</a>
+        </nav>
+        <div class="sidebar-support">
+            <span>도움이 필요하시면</span>
+            <a href="mailto:support@hanatour.com" class="sidebar-mail">support@hanatour.com</a>
+        </div>
+    </aside>
+
+    <div class="main-content" id="top">
     <div class="max-w-4xl mx-auto">
         <div class="card p-8 md:p-12">
             <!-- 헤더 -->
-            <div class="text-center mb-8">
+            <div class="text-center mb-8" id="header-section">
                 <div class="travel-icon mb-4">
                     <i class="fas fa-plane"></i>
                 </div>
@@ -1139,7 +1277,7 @@
                 </div>
 
                 <!-- 현지 정보 -->
-                <div class="bg-pink-50 p-6 rounded-lg border-2 border-pink-200">
+                <div class="bg-pink-50 p-6 rounded-lg border-2 border-pink-200" id="additionalSection">
                     <div class="flex items-center gap-3 mb-4">
                         <i class="fas fa-globe text-pink-600"></i>
                         <select id="additionalTitle" class="px-4 py-2 text-lg font-bold border-2 border-pink-300 rounded-lg focus:border-pink-500 focus:outline-none bg-white">
@@ -1212,7 +1350,7 @@
                 </div>
 
                 <!-- 회사 정보 -->
-                <div class="bg-gray-50 p-6 rounded-lg border-2 border-gray-200">
+                <div class="bg-gray-50 p-6 rounded-lg border-2 border-gray-200" id="companySection">
                     <h3 class="text-lg font-bold text-gray-800 mb-4">
                         <i class="fas fa-building text-gray-600 mr-2"></i>회사 정보 (선택)
                     </h3>
@@ -2385,6 +2523,8 @@
         });
     </script>
     <script src="../js/travel.js"></script>
+    </div>
+    </div>
     <!-- UX: 항상 보이는 미리보기 & 공유 버튼 -->
     <a href="preview.html" class="fab-preview" title="미리보기 & 공유하기" aria-label="미리보기 & 공유하기">
         <span class="icon"><i class="fas fa-eye"></i></span>
