@@ -2118,12 +2118,22 @@
                     e.preventDefault();
                     const data = serializeForm();
                     const payload = encodeData(data);
-					const newWin = window.open(`preview.html?d=${payload}`, '_blank');
-					if (!newWin || newWin.closed) {
-						location.href = `preview.html?d=${payload}`;
-					}
-                });
-
+					                const newWin = window.open(`preview.html?d=${payload}`, '_blank');
+										if (!newWin || newWin.closed) {
+											location.href = `preview.html?d=${payload}`;
+										}
+					                });
+					
+					                const fabPreviewButton = document.getElementById('fabPreviewButton');
+					                fabPreviewButton && fabPreviewButton.addEventListener('click', function (e) {
+					                    e.preventDefault();
+					                    const data = serializeForm();
+					                    const payload = encodeData(data);
+					                    const newWin = window.open(`preview.html?d=${payload}`, '_blank');
+					                    if (!newWin || newWin.closed) {
+					                        location.href = `preview.html?d=${payload}`;
+					                    }
+					                });
                 const STORAGE_KEY = 'travel_saves_v1';
                 const TPL_KEY = 'travel_templates_v1';
                 const getSaves = () => JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
@@ -2526,9 +2536,9 @@
     </div>
     </div>
     <!-- UX: 항상 보이는 미리보기 & 공유 버튼 -->
-    <a href="preview.html" class="fab-preview" title="미리보기 & 공유하기" aria-label="미리보기 & 공유하기">
+    <button type="button" id="fabPreviewButton" class="fab-preview" title="미리보기 & 공유하기" aria-label="미리보기 & 공유하기">
         <span class="icon"><i class="fas fa-eye"></i></span>
         <span class="label">미리보기&공유하기</span>
-    </a>
+    </button>
 </body>
 </html>
